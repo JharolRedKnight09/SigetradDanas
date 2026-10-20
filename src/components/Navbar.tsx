@@ -77,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#F4BA36]/15 border border-[#F4BA36]/40 flex items-center justify-center text-[#FFC82C] shadow-[0_0_15px_rgba(244,186,54,0.25)] shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#2563EB]/15 border border-[#2563EB]/40 flex items-center justify-center text-[#38BDF8] shadow-[0_0_15px_rgba(37,99,235,0.25)] shrink-0">
                 <Truck className="w-5 h-5 drop-shadow-xs" />
               </div>
               <div>
@@ -85,8 +85,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
                   <span className="font-extrabold text-base tracking-tight text-white font-mono uppercase">
                     SIGETRAD
                   </span>
-                  <div className="w-2 h-2 rounded-full bg-[#F4BA36] shadow-[0_0_8px_rgba(244,186,54,0.9)]"></div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#1A2433] text-[#FFC82C] border border-[#F4BA36]/30 shadow-xs">
+                  <div className="w-2 h-2 rounded-full bg-[#2563EB] shadow-[0_0_8px_rgba(37,99,235,0.9)]"></div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#1A2433] text-[#38BDF8] border border-blue-500/30 shadow-xs">
                     Enterprise TMS
                   </span>
                 </div>
@@ -194,14 +194,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
               onClick={toggleTheme}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs border ${
                 theme === 'dark'
-                  ? 'bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border-amber-400/30'
+                  ? 'bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border-blue-500/30'
                   : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300 shadow-sm'
               }`}
               title={theme === 'dark' ? 'Cambiar a Modo Claro en el panel central' : 'Cambiar a Modo Oscuro en el panel central'}
             >
               {theme === 'dark' ? (
                 <>
-                  <Sun className="w-4 h-4 text-amber-400" />
+                  <Sun className="w-4 h-4 text-sky-400" />
                   <span className="hidden sm:inline">Modo Claro</span>
                 </>
               ) : (
@@ -215,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
             {/* Reset Demo Data Button */}
             <button
               onClick={() => setShowConfirmReset(true)}
-              className="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-900 transition-colors cursor-pointer border border-transparent hover:border-slate-800"
+              className="p-2 rounded-xl text-slate-400 hover:text-blue-400 hover:bg-slate-900 transition-colors cursor-pointer border border-transparent hover:border-slate-800"
               title="Restablecer datos originales de levantamiento"
             >
               <RotateCcw className="w-4 h-4" />
@@ -224,10 +224,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
             {/* Preview Login Screen Button */}
             <button
               onClick={logout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#F59E0B]/15 hover:bg-[#F59E0B]/25 text-[#FFC82C] border border-[#F59E0B]/40 transition-all cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600/20 hover:bg-blue-600/30 text-[#38BDF8] border border-blue-500/40 transition-all cursor-pointer shadow-xs"
               title="Cerrar sesión para ver y probar la nueva pantalla de Login"
             >
-              <LogOut className="w-3.5 h-3.5 text-[#FFC82C]" />
+              <LogOut className="w-3.5 h-3.5 text-[#38BDF8]" />
               <span>Ver Login</span>
             </button>
           </div>

@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
             <span className={`font-bold truncate ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
               {currentUser.cargo}
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#1A2433] text-[#FFC82C] border border-[#F4BA36]/30 font-semibold">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#1A2433] text-[#38BDF8] border border-blue-500/30 font-semibold">
               {currentUser.rol === 'DUENO' ? 'ADMIN' : currentUser.rol}
             </span>
           </div>
@@ -218,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
                       }}
                       className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-all duration-150 group ${
                         isSelected
-                          ? 'bg-[#F4BA36] text-slate-950 font-bold shadow-[0_0_20px_rgba(244,186,54,0.35)]'
+                          ? 'bg-[#2563EB] text-white font-bold shadow-[0_0_20px_rgba(37,99,235,0.4)]'
                           : hasAccess
                           ? theme === 'light'
                             ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950 cursor-pointer'
@@ -230,11 +230,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
                         <div
                           className={`p-1.5 rounded-lg transition-colors ${
                             isSelected
-                              ? 'bg-slate-950/20 text-slate-950'
+                              ? 'bg-white/20 text-white'
                               : hasAccess
                               ? theme === 'light'
-                                ? 'bg-slate-100 border border-slate-200 text-slate-600 group-hover:text-amber-600'
-                                : 'bg-[#131B26] border border-[#1E293B] text-slate-400 group-hover:text-[#FFC82C] group-hover:border-[#F4BA36]/30'
+                                ? 'bg-slate-100 border border-slate-200 text-slate-600 group-hover:text-blue-600'
+                                : 'bg-[#131B26] border border-[#1E293B] text-slate-400 group-hover:text-[#38BDF8] group-hover:border-blue-500/30'
                               : 'bg-slate-800/40 text-slate-500 border border-transparent'
                           }`}
                         >
@@ -244,7 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
                           <div
                             className={`text-xs font-semibold leading-tight ${
                               isSelected
-                                ? 'text-slate-950'
+                                ? 'text-white'
                                 : theme === 'light'
                                 ? 'text-slate-800 group-hover:text-slate-950'
                                 : 'text-slate-100 group-hover:text-white'
@@ -255,7 +255,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
                           <div
                             className={`text-[10px] truncate ${
                               isSelected
-                                ? 'text-slate-800 font-medium'
+                                ? 'text-blue-100 font-medium'
                                 : theme === 'light'
                                 ? 'text-slate-500'
                                 : 'text-slate-400'
@@ -271,7 +271,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
                         {item.badge && hasAccess && (
                           <span
                             className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full text-white shadow-xs ${
-                              isSelected ? 'bg-slate-950 text-white' : item.badgeColor || 'bg-slate-700'
+                              isSelected ? 'bg-white text-blue-700' : item.badgeColor || 'bg-slate-700'
                             }`}
                           >
                             {item.badge}

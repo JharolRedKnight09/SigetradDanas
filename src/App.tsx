@@ -75,7 +75,7 @@ const MainLayout: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans antialiased selection:bg-[#F4BA36] selection:text-[#0B0F17] transition-colors duration-200 ${
+      className={`min-h-screen flex flex-col font-sans antialiased selection:bg-[#2563EB] selection:text-white transition-colors duration-200 ${
         theme === 'light' ? 'theme-light bg-slate-100 text-slate-900' : 'theme-dark bg-[#0B0F17] text-[#E2E8F0]'
       }`}
     >
@@ -102,7 +102,7 @@ const MainLayout: React.FC = () => {
             >
               SIGETRAD
             </span>
-            <div className="w-1.5 h-1.5 rounded-full bg-[#F4BA36] shadow-[0_0_8px_rgba(244,186,54,0.8)]"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] shadow-[0_0_8px_rgba(37,99,235,0.8)]"></div>
           </div>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           <span className={theme === 'light' ? 'text-slate-600 font-medium' : 'text-slate-400 font-medium'}>
@@ -112,8 +112,8 @@ const MainLayout: React.FC = () => {
           <span
             className={`px-2.5 py-0.5 rounded-md font-bold shadow-xs ${
               theme === 'light'
-                ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                : 'bg-[#1A2433] text-[#FFC82C] border border-[#F4BA36]/30'
+                ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                : 'bg-[#1A2433] text-[#38BDF8] border border-blue-500/40'
             }`}
           >
             {currentMeta.title}
@@ -165,21 +165,27 @@ const MainLayout: React.FC = () => {
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Contextual Notice for Operator / Pilot role */}
             {currentUser.rol === 'PILOTO' && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-[#1A2433] to-[#131B26] border border-[#F4BA36]/40 text-white shadow-lg flex items-center justify-between gap-3">
+              <div className={`p-4 rounded-2xl border shadow-lg flex items-center justify-between gap-3 ${
+                theme === 'light'
+                  ? 'bg-blue-50/80 border-blue-200 text-slate-800'
+                  : 'bg-gradient-to-r from-[#1A2433] to-[#131B26] border-blue-500/40 text-white'
+              }`}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#F4BA36]/20 text-[#FFC82C] flex items-center justify-center shrink-0">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    theme === 'light' ? 'bg-blue-100 text-[#2563EB]' : 'bg-[#2563EB]/20 text-[#38BDF8]'
+                  }`}>
                     <Smartphone className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="font-bold text-sm block text-white">Terminal Operador / Piloto Activa</span>
-                    <span className="text-xs text-slate-400">
+                    <span className={`font-bold text-sm block ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>Terminal Operador / Piloto Activa</span>
+                    <span className={`text-xs ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
                       Dispone de acceso móvil optimizado para registrar básculas en muelle de sus viajes asignados.
                     </span>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowPilotoModal(true)}
-                  className="px-4 py-2 rounded-xl bg-[#F4BA36] hover:bg-[#FFC82C] text-slate-950 text-xs font-bold shadow-[0_0_15px_rgba(244,186,54,0.3)] whitespace-nowrap cursor-pointer transition-all"
+                  className="px-4 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold shadow-md shadow-blue-600/30 whitespace-nowrap cursor-pointer transition-all"
                 >
                   Abrir Portal Móvil
                 </button>
@@ -195,10 +201,10 @@ const MainLayout: React.FC = () => {
       {/* Floating quick toggle to preview Login Screen */}
       <button
         onClick={logout}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#1A2433] hover:bg-[#F59E0B] text-[#FFC82C] hover:text-slate-950 border border-[#F4BA36]/50 shadow-2xl text-xs font-bold transition-all cursor-pointer backdrop-blur-md group"
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/90 hover:bg-[#2563EB] text-slate-100 hover:text-white border border-blue-500/40 shadow-2xl text-xs font-bold transition-all cursor-pointer backdrop-blur-md group"
         title="Probar y previsualizar la nueva pantalla de Login"
       >
-        <span className="w-2 h-2 rounded-full bg-[#10B981] group-hover:bg-slate-900 animate-pulse"></span>
+        <span className="w-2 h-2 rounded-full bg-[#10B981] group-hover:bg-white animate-pulse"></span>
         <span>Ver Pantalla de Login</span>
       </button>
 

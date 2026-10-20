@@ -6,8 +6,11 @@
     --bg-surface-card: #131B26;
     --bg-surface-card-elevated: #1A2433;
     --border-subtle: #1E293B;
-    --amber-bright: #FFC82C;
-    --amber-dim: #F4BA36;
+    --blue-bright: #38BDF8;
+    --blue-primary: #2563EB;
+    --blue-dim: #1D4ED8;
+    --amber-bright: #38BDF8;
+    --amber-dim: #2563EB;
   }
 
   body {
@@ -29,7 +32,7 @@
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(244, 186, 54, 0.5);
+    background: rgba(37, 99, 235, 0.6);
   }
 }
 
@@ -42,6 +45,14 @@
 .theme-light .main-panel {
   background-color: #F8FAFC !important;
   color: #1E293B !important;
+}
+
+/* Clear dark slate gradients on containers in light mode */
+.theme-light main div[class*="bg-gradient"][class*="slate-950"],
+.theme-light main div[class*="bg-gradient"][class*="slate-900"] {
+  background-image: none !important;
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
 }
 
 /* Central panel card surfaces */
@@ -64,8 +75,24 @@
 }
 
 /* Light mode text contrast adjustments inside the central panel */
-.theme-light main .text-white:not(.keep-white) {
+.theme-light main .text-white:not(.keep-white):not(button *):not([class*="bg-blue"] *):not([class*="from-blue"] *) {
   color: #0F172A !important;
+}
+
+/* Protect white text on colored/blue buttons and tags */
+.theme-light main button[class*="bg-blue"],
+.theme-light main button[class*="bg-[#2563EB]"],
+.theme-light main button[class*="from-blue"],
+.theme-light main button[class*="bg-indigo"],
+.theme-light main button[class*="bg-emerald"],
+.theme-light main .keep-white {
+  color: #FFFFFF !important;
+}
+
+.theme-light main button[class*="bg-blue"] *,
+.theme-light main button[class*="bg-[#2563EB]"] *,
+.theme-light main button[class*="from-blue"] * {
+  color: #FFFFFF !important;
 }
 
 .theme-light main .text-slate-300,

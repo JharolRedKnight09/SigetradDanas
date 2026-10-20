@@ -14,6 +14,8 @@ import {
   RegistroGastoCombustible,
   BitacoraAccion,
   CategoriaMovimiento,
+  MaterialType,
+  EstadoViaje,
 } from '../types';
 import {
   INITIAL_USERS,
@@ -94,6 +96,10 @@ interface AppContextType {
   theme: 'dark' | 'light';
   toggleTheme: () => void;
   setTheme: (theme: 'dark' | 'light') => void;
+
+  // Cierre de Sesión por Inactividad
+  sessionNotice: string | null;
+  clearSessionNotice: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -257,15 +263,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(`${STORAGE_KEY}_bitacora`, JSON.stringify(bitacora));
   }, [bitacora]);
 
-  // Sincronización con la API de MySQL en el servidor
+  // Cierre de Sesión Automático por Inactividad (15 Minutos)
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
+  const clearSessionNotice = () => setSessionNotice(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let timeoutId: any;
+    const INACTIVITY_TIME = 15 * 60 * 1000; // 15 minutos
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsAuthenticated(false);
+        localStorage.removeItem(`${STORAGE_KEY}_is_auth`);
+        setSessionNotice('Su sesión se cerró automáticamente tras 15 minutos de inactividad por políticas de seguridad.');
+      }, INACTIVITY_TIME);
+    };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
+    events.forEach((ev) => window.addEventListener(ev, resetTimer, { passive: true }));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((ev) => window.removeEventListener(ev, resetTimer));
+    };
+  }, [isAuthenticated]);
+
+  // Sincronización con la API de MySQL en el servidor (Multi-tabla en tiempo real)
   useEffect(() => {
     const sincronizarConServidor = async () => {
       try {
-        const res = await fetch('/api/clientes');
-        if (res.ok) {
-          const clientesDb = await res.json();
+        // 1. Sincronizar Clientes desde MySQL
+        const resClientes = await fetch('/api/clientes');
+        if (resClientes.ok) {
+          const clientesDb = await resClientes.json();
           if (Array.isArray(clientesDb) && clientesDb.length > 0) {
-            // Mapear los datos de MySQL al formato de Cliente
             const clientesFormateados: Cliente[] = clientesDb.map((c: any) => ({
               id: `cli-${c.id}`,
               codigo: c.codigo,
@@ -275,16 +310,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               telefono: c.telefono || '',
               correo: c.correo || c.email || '',
               esAgenteRetenedor: Boolean(c.es_agente_retenedor ?? true),
-              buquesHabituales: Array.isArray(c.buquesHabituales) ? c.buquesHabituales : [],
+              buquesHabituales: typeof c.buques_habituales === 'string' ? c.buques_habituales.split(',').map((s: string) => s.trim()) : (c.buquesHabituales || []),
               contactoPrincipal: c.contacto_principal || c.contactoPrincipal || '',
               activo: Boolean(c.activo ?? true)
             }));
             
-            // Unir sin duplicados con los iniciales
             setClientes((prev) => {
               const existentesCodigos = new Set(clientesFormateados.map(c => c.codigo));
               const filtradosPrev = prev.filter(p => !existentesCodigos.has(p.codigo));
               return [...clientesFormateados, ...filtradosPrev];
+            });
+          }
+        }
+
+        // 2. Sincronizar Viajes desde MySQL
+        const resViajes = await fetch('/api/viajes');
+        if (resViajes.ok) {
+          const viajesDb = await resViajes.json();
+          if (Array.isArray(viajesDb) && viajesDb.length > 0) {
+            const viajesFormateados: Viaje[] = viajesDb.map((v: any) => ({
+              id: `vj-${v.id}`,
+              codigoViaje: v.codigo_viaje,
+              clienteId: String(v.cliente_id),
+              clienteNombre: v.cliente_nombre,
+              buqueNombre: v.buque_nombre,
+              categoriaMovimiento: (v.categoria_movimiento || 'Buques') as CategoriaMovimiento,
+              material: (v.material || 'Carbón') as MaterialType,
+              gondolaId: String(v.gondola_id),
+              placa: v.placa,
+              propietarioHermanoId: v.propietario_hermano_id || 'herm-1',
+              pilotoId: String(v.piloto_id),
+              pilotoNombre: v.piloto_nombre,
+              origen: v.origen || 'Puerto Quetzal',
+              destino: v.destino || 'Planta Central',
+              fechaSalida: v.fecha_salida,
+              fechaEntrega: v.fecha_llegada || undefined,
+              estado: (v.estado || 'En Curso') as EstadoViaje,
+              pesajeCarga: v.peso_bruto_puerto ? {
+                numeroBoleta: v.ticket_puerto || 'BOL-001',
+                pesoBrutoKg: Number(v.peso_bruto_puerto) * 1000,
+                taraKg: Number(v.tara_puerto) * 1000,
+                pesoNetoKg: Number(v.peso_neto_puerto) * 1000,
+                pesoNetoTon: Number(v.peso_neto_puerto),
+                fechaHora: v.fecha_salida || '',
+                basculaNombre: 'Báscula Muelle Puerto'
+              } : undefined,
+              pesajeDescarga: v.peso_bruto_destino ? {
+                numeroBoleta: v.ticket_destino || 'BOL-002',
+                pesoBrutoKg: Number(v.peso_bruto_destino) * 1000,
+                taraKg: Number(v.tara_destino) * 1000,
+                pesoNetoKg: Number(v.peso_neto_destino) * 1000,
+                pesoNetoTon: Number(v.peso_neto_destino),
+                fechaHora: v.fecha_llegada || '',
+                basculaNombre: 'Báscula Silos Planta'
+              } : undefined,
+              tarifaAcordada: Number(v.tarifa_acordada || 0),
+              facturaId: v.factura_id || undefined,
+            }));
+
+            setViajes((prev) => {
+              const codigosExistentes = new Set(viajesFormateados.map((v) => v.codigoViaje));
+              const filtrados = prev.filter((p) => !codigosExistentes.has(p.codigoViaje));
+              return [...viajesFormateados, ...filtrados];
             });
           }
         }
@@ -343,12 +430,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAccion('Clientes', 'Actualización de Cliente', `Se modificó la información del cliente ID: ${id}`);
   };
 
-  // Pilotos CRUD
+  // Pilotos CRUD con sincronización MySQL
   const addPiloto = (pilotoData: Omit<Piloto, 'id'>) => {
     const newId = `pil-${Date.now()}`;
     const nuevo: Piloto = { ...pilotoData, id: newId };
     setPilotos((prev) => [...prev, nuevo]);
     logAccion('Pilotos', 'Alta de Piloto', `Se registró al piloto: ${nuevo.nombreCompleto}`);
+
+    try {
+      fetch('/api/pilotos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevo),
+      }).catch((e) => console.warn('MySQL sincronización piloto pendiente:', e));
+    } catch (e) {}
   };
 
   const updatePiloto = (id: string, pilotoData: Partial<Piloto>) => {
@@ -358,12 +453,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAccion('Pilotos', 'Actualización de Piloto', `Se actualizó el piloto ID: ${id}`);
   };
 
-  // Góndolas CRUD
+  // Góndolas CRUD con sincronización MySQL
   const addGondola = (gondolaData: Omit<Gondola, 'id'>) => {
     const newId = `gon-${Date.now()}`;
     const nueva: Gondola = { ...gondolaData, id: newId };
     setGondolas((prev) => [...prev, nueva]);
     logAccion('Góndolas', 'Registro de Unidad', `Se dio de alta la góndola placa: ${nueva.placa}`);
+
+    try {
+      fetch('/api/gondolas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nueva),
+      }).catch((e) => console.warn('MySQL sincronización góndola pendiente:', e));
+    } catch (e) {}
   };
 
   const updateGondola = (id: string, gondolaData: Partial<Gondola>) => {
@@ -373,7 +476,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAccion('Góndolas', 'Actualización de Unidad', `Se actualizó la góndola ID: ${id}`);
   };
 
-  // Viajes CRUD
+  // Viajes CRUD con sincronización a MySQL
   const addViaje = (viajeData: Omit<Viaje, 'id' | 'codigoViaje'>): Viaje => {
     const nextNumber = viajes.length + 101;
     const codigoViaje = `VJ-2025-0${nextNumber}`;
@@ -399,6 +502,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'Creación de Viaje',
       `Registrado viaje ${codigoViaje} - Buque/Mov: ${newViaje.buqueNombre}, Placa: ${newViaje.placa}`
     );
+
+    // Persistir en MySQL en el servidor
+    try {
+      fetch('/api/viajes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newViaje),
+      }).catch((e) => console.warn('MySQL sincronización viaje pendiente:', e));
+    } catch (e) {}
+
     return newViaje;
   };
 
@@ -422,11 +535,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
     logAccion('Viajes', 'Actualización de Viaje', `Se actualizaron datos/pesaje del viaje ID: ${id}`);
+
+    // Persistir pesaje o actualización en MySQL
+    try {
+      fetch(`/api/viajes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(viajeData),
+      }).catch((e) => console.warn('MySQL actualización viaje pendiente:', e));
+    } catch (e) {}
   };
 
   const deleteViaje = (id: string) => {
     setViajes((prev) => prev.filter((v) => v.id !== id));
     logAccion('Viajes', 'Eliminación de Viaje', `Se eliminó el registro de viaje ID: ${id}`);
+
+    try {
+      fetch(`/api/viajes/${id}`, { method: 'DELETE' }).catch(() => {});
+    } catch (e) {}
   };
 
   // Facturación
@@ -548,6 +674,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'Factura Creada',
       `Factura ${newFactura.numeroFactura} creada por Q${newFactura.montoBruto.toLocaleString()}`
     );
+
+    // Persistir en MySQL en el servidor
+    try {
+      fetch('/api/facturas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFactura),
+      }).catch((e) => console.warn('MySQL sincronización factura pendiente:', e));
+    } catch (e) {}
+
     return newFactura;
   };
 
@@ -571,7 +707,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAccion('Facturación', 'Modificación de Factura', `Se modificó la factura ID: ${id}. ${motivoCambio || ''}`);
   };
 
-  // Pagos y Conciliación
+  // Pagos y Conciliación con sincronización MySQL
   const registrarPagoConciliacion = (
     pagoData: Omit<PagoConciliacion, 'id' | 'fechaRegistro' | 'creadoPor'>
   ): PagoConciliacion => {
@@ -587,7 +723,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Update invoice status to 'Conciliada'
     setFacturas((prev) =>
       prev.map((f) => {
-        if (f.id === newPago.facturaId) {
+        if (f.id === newPago.facturaId || f.numeroFactura === newPago.numeroFactura) {
           return {
             ...f,
             estadoPago: 'Conciliada',
@@ -612,10 +748,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       `Pago ${newPago.numeroTransferencia} registrado. Factura: ${newPago.numeroFactura}, Neto: Q${newPago.montoNetoDepositado.toLocaleString()} a cuenta de ${newPago.titularCuenta}`
     );
 
+    // Persistir en MySQL en el servidor
+    try {
+      fetch('/api/pagos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPago),
+      }).catch((e) => console.warn('MySQL sincronización pago pendiente:', e));
+    } catch (e) {}
+
     return newPago;
   };
 
-  // Combustible
+  // Combustible con sincronización MySQL
   const addRegistroCombustible = (registroData: Omit<RegistroGastoCombustible, 'id'>) => {
     const nuevo: RegistroGastoCombustible = {
       ...registroData,
@@ -627,6 +772,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'Registro de Despacho',
       `Despacho de ${nuevo.galones} galones a placa ${nuevo.placa} (Q${nuevo.totalGasto.toLocaleString()})`
     );
+
+    // Persistir en MySQL en el servidor
+    try {
+      fetch('/api/combustible', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevo),
+      }).catch((e) => console.warn('MySQL sincronización combustible pendiente:', e));
+    } catch (e) {}
   };
 
   const updateParametroCombustible = (tipo: string, galones: number) => {
@@ -814,6 +968,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         theme,
         toggleTheme,
         setTheme,
+        sessionNotice,
+        clearSessionNotice,
       }}
     >
       {children}

@@ -1,0 +1,506 @@
+/**
+ * SIGETRAD - Servidor Backend API REST & MySQL
+ * Transportes y Servicios Dannas, S.A.
+ * 
+ * Corre 24/7 en el puerto 4000 administrado por PM2
+ * Conectado con proxy inverso Nginx en https://sigetrad.duckdns.org/api/
+ */
+
+const express = require('express');
+const mysql = require('mysql2/promise');
+const cors = require('cors');
+
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+app.use(cors());
+app.use(express.json());
+
+// Configuración de Conexión a Base de Datos MySQL
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'sigetrad_user',
+  password: process.env.DB_PASSWORD || 'Sigetrad2026Secure!',
+  database: process.env.DB_NAME || 'sigetrad_db',
+  waitForConnections: true,
+  connectionLimit: 15,
+  queueLimit: 0,
+};
+
+let pool;
+
+async function initDatabase() {
+  try {
+    pool = mysql.createPool(dbConfig);
+    console.log('[MySQL] Pool de conexiones establecido exitosamente.');
+
+    // Inicialización automática de tablas para garantizar persistencia total
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS clientes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        codigo VARCHAR(30) UNIQUE NOT NULL,
+        nombre VARCHAR(150) NOT NULL,
+        nit VARCHAR(30) NOT NULL,
+        direccion VARCHAR(255) DEFAULT '',
+        telefono VARCHAR(50) DEFAULT '',
+        correo VARCHAR(100) DEFAULT '',
+        es_agente_retenedor BOOLEAN DEFAULT TRUE,
+        buques_habituales TEXT,
+        contacto_principal VARCHAR(150) DEFAULT '',
+        activo BOOLEAN DEFAULT TRUE,
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS pilotos (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nombre_completo VARCHAR(150) NOT NULL,
+        dpi VARCHAR(30) UNIQUE NOT NULL,
+        licencia VARCHAR(30) NOT NULL,
+        telefono VARCHAR(50) DEFAULT '',
+        tipo_licencia VARCHAR(10) DEFAULT 'A',
+        vencimiento_licencia DATE,
+        estado VARCHAR(30) DEFAULT 'Disponible',
+        tarifa_viaje DECIMAL(10,2) DEFAULT 350.00,
+        gondola_habitual VARCHAR(20) DEFAULT '',
+        activo BOOLEAN DEFAULT TRUE,
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS gondolas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        placa VARCHAR(20) UNIQUE NOT NULL,
+        propietario VARCHAR(50) NOT NULL,
+        tipo VARCHAR(50) DEFAULT 'Triaxial Volteo',
+        capacidad_toneladas DECIMAL(8,2) DEFAULT 38.00,
+        estado VARCHAR(30) DEFAULT 'Disponible',
+        kilometraje_actual INT DEFAULT 120000,
+        activo BOOLEAN DEFAULT TRUE,
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS viajes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        codigo_viaje VARCHAR(40) UNIQUE NOT NULL,
+        cliente_id VARCHAR(50) NOT NULL,
+        cliente_nombre VARCHAR(150) NOT NULL,
+        buque_nombre VARCHAR(80) NOT NULL,
+        categoria_movimiento VARCHAR(80) NOT NULL,
+        material VARCHAR(80) NOT NULL,
+        gondola_id VARCHAR(50) NOT NULL,
+        placa VARCHAR(30) NOT NULL,
+        piloto_id VARCHAR(50) NOT NULL,
+        piloto_nombre VARCHAR(150) NOT NULL,
+        origen VARCHAR(100) NOT NULL,
+        destino VARCHAR(100) NOT NULL,
+        fecha_salida VARCHAR(50) NOT NULL,
+        fecha_llegada VARCHAR(50),
+        estado VARCHAR(30) DEFAULT 'En Curso',
+        peso_bruto_puerto DECIMAL(10,2) DEFAULT 0.00,
+        tara_puerto DECIMAL(10,2) DEFAULT 0.00,
+        peso_neto_puerto DECIMAL(10,2) DEFAULT 0.00,
+        ticket_puerto VARCHAR(50),
+        peso_bruto_destino DECIMAL(10,2) DEFAULT 0.00,
+        tara_destino DECIMAL(10,2) DEFAULT 0.00,
+        peso_neto_destino DECIMAL(10,2) DEFAULT 0.00,
+        ticket_destino VARCHAR(50),
+        tarifa_acordada DECIMAL(10,2) DEFAULT 0.00,
+        factura_id VARCHAR(50),
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS facturas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        numero_factura VARCHAR(50) UNIQUE NOT NULL,
+        cliente_id VARCHAR(50) NOT NULL,
+        cliente_nombre VARCHAR(150) NOT NULL,
+        nit_cliente VARCHAR(30) NOT NULL,
+        fecha_emision DATE NOT NULL,
+        fecha_vencimiento DATE NOT NULL,
+        buque_proyecto VARCHAR(100) NOT NULL,
+        material VARCHAR(100) NOT NULL,
+        cantidad_viajes INT NOT NULL DEFAULT 1,
+        monto_bruto DECIMAL(12,2) NOT NULL,
+        es_agente_retenedor BOOLEAN DEFAULT TRUE,
+        retencion_isr_estimada DECIMAL(12,2) DEFAULT 0.00,
+        retencion_iva_estimada DECIMAL(12,2) DEFAULT 0.00,
+        neto_esperado DECIMAL(12,2) NOT NULL,
+        estado_pago VARCHAR(30) DEFAULT 'Emitida',
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS pagos (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        factura_id VARCHAR(50) NOT NULL,
+        numero_factura VARCHAR(50) NOT NULL,
+        cliente_nombre VARCHAR(150) NOT NULL,
+        fecha_deposito DATE NOT NULL,
+        banco_destino VARCHAR(80) NOT NULL,
+        numero_cuenta VARCHAR(60) NOT NULL,
+        titular_cuenta VARCHAR(100) NOT NULL,
+        monto_bruto_factura DECIMAL(12,2) NOT NULL,
+        retencion_isr_aplicada DECIMAL(12,2) DEFAULT 0.00,
+        retencion_iva_aplicada DECIMAL(12,2) DEFAULT 0.00,
+        monto_neto_depositado DECIMAL(12,2) NOT NULL,
+        numero_transferencia VARCHAR(60) NOT NULL,
+        numero_constancia_sat VARCHAR(60),
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS combustible (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        fecha DATE NOT NULL,
+        gondola_placa VARCHAR(30) NOT NULL,
+        piloto_nombre VARCHAR(150) NOT NULL,
+        tipo_movimiento VARCHAR(80) NOT NULL,
+        galones DECIMAL(8,2) NOT NULL,
+        precio_por_galon DECIMAL(8,2) NOT NULL,
+        total_gasto DECIMAL(10,2) NOT NULL,
+        estacion_servicio VARCHAR(100) NOT NULL,
+        numero_vale VARCHAR(50) NOT NULL,
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    console.log('[MySQL] Tablas verificadas e inicializadas en sigetrad_db.');
+  } catch (err) {
+    console.error('[MySQL Error] No se pudo inicializar la base de datos:', err.message);
+  }
+}
+
+initDatabase();
+
+// -------------------------------------------------------------
+// RUTAS DE LA API (Endpoints REST)
+// -------------------------------------------------------------
+
+// 1. Health Check
+app.get('/api/health', async (req, res) => {
+  try {
+    if (!pool) return res.status(503).json({ status: 'ERROR', message: 'Conexión a MySQL no inicializada' });
+    await pool.query('SELECT 1');
+    res.json({
+      status: 'OK',
+      database: 'Conectada exitosamente a MySQL (sigetrad_db)',
+      servidor: 'SIGETRAD Enterprise TMS Backend v1.0',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'ERROR', message: err.message });
+  }
+});
+
+// 2. Clientes
+app.get('/api/clientes', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM clientes ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/clientes', async (req, res) => {
+  try {
+    const { codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal } = req.body;
+    const [result] = await pool.query(
+      `INSERT INTO clientes (codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), nit=VALUES(nit), telefono=VALUES(telefono), correo=VALUES(correo)`,
+      [codigo, nombre, nit, direccion || '', telefono || '', correo || '', es_agente_retenedor ?? true, buques_habituales || '', contacto_principal || '']
+    );
+    res.status(201).json({ id: result.insertId, message: 'Cliente guardado exitosamente en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. Viajes (Operaciones & Básculas)
+app.get('/api/viajes', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM viajes ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/viajes', async (req, res) => {
+  try {
+    const v = req.body;
+    const [result] = await pool.query(
+      `INSERT INTO viajes (codigo_viaje, cliente_id, cliente_nombre, buque_nombre, categoria_movimiento, material, gondola_id, placa, piloto_id, piloto_nombre, origen, destino, fecha_salida, fecha_llegada, estado, peso_bruto_puerto, tara_puerto, peso_neto_puerto, ticket_puerto, peso_bruto_destino, tara_destino, peso_neto_destino, ticket_destino, tarifa_acordada, factura_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        v.codigoViaje,
+        v.clienteId,
+        v.clienteNombre,
+        v.buqueNombre,
+        v.categoriaMovimiento,
+        v.material,
+        v.gondolaId,
+        v.placa,
+        v.pilotoId,
+        v.pilotoNombre,
+        v.origen,
+        v.destino,
+        v.fechaSalida,
+        v.fechaLlegada || null,
+        v.estado || 'En Curso',
+        v.pesajeCarga?.pesoBrutoTon || 0,
+        v.pesajeCarga?.taraTon || 0,
+        v.pesajeCarga?.pesoNetoTon || 0,
+        v.pesajeCarga?.ticketNumero || '',
+        v.pesajeDescarga?.pesoBrutoTon || 0,
+        v.pesajeDescarga?.taraTon || 0,
+        v.pesajeDescarga?.pesoNetoTon || 0,
+        v.pesajeDescarga?.ticketNumero || '',
+        v.tarifaAcordada || 0,
+        v.facturaId || null
+      ]
+    );
+    res.status(201).json({ id: result.insertId, message: 'Viaje registrado exitosamente en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/viajes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const v = req.body;
+    await pool.query(
+      `UPDATE viajes SET 
+         estado = COALESCE(?, estado),
+         peso_bruto_puerto = COALESCE(?, peso_bruto_puerto),
+         tara_puerto = COALESCE(?, tara_puerto),
+         peso_neto_puerto = COALESCE(?, peso_neto_puerto),
+         ticket_puerto = COALESCE(?, ticket_puerto),
+         peso_bruto_destino = COALESCE(?, peso_bruto_destino),
+         tara_destino = COALESCE(?, tara_destino),
+         peso_neto_destino = COALESCE(?, peso_neto_destino),
+         ticket_destino = COALESCE(?, ticket_destino),
+         fecha_llegada = COALESCE(?, fecha_llegada),
+         factura_id = COALESCE(?, factura_id)
+       WHERE id = ? OR codigo_viaje = ?`,
+      [
+        v.estado,
+        v.pesajeCarga?.pesoBrutoTon,
+        v.pesajeCarga?.taraTon,
+        v.pesajeCarga?.pesoNetoTon,
+        v.pesajeCarga?.ticketNumero,
+        v.pesajeDescarga?.pesoBrutoTon,
+        v.pesajeDescarga?.taraTon,
+        v.pesajeDescarga?.pesoNetoTon,
+        v.pesajeDescarga?.ticketNumero,
+        v.fechaLlegada,
+        v.facturaId,
+        id,
+        id
+      ]
+    );
+    res.json({ message: 'Viaje actualizado exitosamente en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. Pilotos
+app.get('/api/pilotos', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM pilotos ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/pilotos', async (req, res) => {
+  try {
+    const p = req.body;
+    const [result] = await pool.query(
+      `INSERT INTO pilotos (nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [p.nombreCompleto, p.dpi, p.licencia, p.telefono, p.tipoLicencia || 'A', p.vencimientoLicencia, p.estado || 'Disponible', p.tarifaViaje || 350.00, p.gondolaHabitual || '']
+    );
+    res.status(201).json({ id: result.insertId, message: 'Piloto guardado en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5. Góndolas
+app.get('/api/gondolas', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM gondolas ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/gondolas', async (req, res) => {
+  try {
+    const g = req.body;
+    const [result] = await pool.query(
+      `INSERT INTO gondolas (placa, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [g.placa, g.propietario, g.tipo || 'Triaxial Volteo', g.capacidadToneladas || 38.00, g.estado || 'Disponible', g.kilometrajeActual || 120000]
+    );
+    res.status(201).json({ id: result.insertId, message: 'Góndola guardada en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 6. Facturas
+app.get('/api/facturas', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM facturas ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/facturas', async (req, res) => {
+  try {
+    const f = req.body;
+    const [result] = await pool.query(
+      `INSERT INTO facturas (numero_factura, cliente_id, cliente_nombre, nit_cliente, fecha_emision, fecha_vencimiento, buque_proyecto, material, cantidad_viajes, monto_bruto, es_agente_retenedor, retencion_isr_estimada, retencion_iva_estimada, neto_esperado, estado_pago)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        f.numeroFactura,
+        f.clienteId,
+        f.clienteNombre,
+        f.nitCliente,
+        f.fechaEmision,
+        f.fechaVencimiento,
+        f.buqueProyecto,
+        f.material,
+        f.cantidadViajes || 1,
+        f.montoBruto,
+        f.esAgenteRetenedor ?? true,
+        f.retencionIsrEstimada || 0,
+        f.retencionIvaEstimada || 0,
+        f.netoEsperado,
+        f.estadoPago || 'Emitida'
+      ]
+    );
+    res.status(201).json({ id: result.insertId, message: 'Factura registrada en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 7. Pagos y Conciliación
+app.get('/api/pagos', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM pagos ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/pagos', async (req, res) => {
+  try {
+    const p = req.body;
+    const [result] = await pool.query(
+      `INSERT INTO pagos (factura_id, numero_factura, cliente_nombre, fecha_deposito, banco_destino, numero_cuenta, titular_cuenta, monto_bruto_factura, retencion_isr_aplicada, retencion_iva_aplicada, monto_neto_depositado, numero_transferencia, numero_constancia_sat)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        p.facturaId,
+        p.numeroFactura,
+        p.clienteNombre,
+        p.fechaDeposito,
+        p.bancoDestino,
+        p.numeroCuenta,
+        p.titularCuenta,
+        p.montoBrutoFactura,
+        p.retencionIsrAplicada || 0,
+        p.retencionIvaAplicada || 0,
+        p.montoNetoDepositado,
+        p.numeroTransferencia,
+        p.numeroConstanciaSat || ''
+      ]
+    );
+
+    // Actualizar estado de factura a Conciliada
+    await pool.query(`UPDATE facturas SET estado_pago = 'Conciliada' WHERE numero_factura = ?`, [p.numeroFactura]);
+
+    res.status(201).json({ id: result.insertId, message: 'Pago y conciliación guardados en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8. Combustible
+app.get('/api/combustible', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM combustible ORDER BY id DESC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/combustible', async (req, res) => {
+  try {
+    const c = req.body;
+    const [result] = await pool.query(
+      `INSERT INTO combustible (fecha, gondola_placa, piloto_nombre, tipo_movimiento, galones, precio_por_galon, total_gasto, estacion_servicio, numero_vale)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [c.fecha, c.placa, c.pilotoNombre, c.tipoMovimientoOMaterial, c.galones, c.precioPorGalon, c.totalGasto, c.estacionServicio, c.numeroVale]
+    );
+    res.status(201).json({ id: result.insertId, message: 'Vale de combustible guardado en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 9. Autenticación (Login)
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const cleanUser = email.trim().toLowerCase();
+    if (
+      (cleanUser === 'jairo.dannas' || cleanUser === 'admin') &&
+      (password === 'admin' || password === 'admin123')
+    ) {
+      return res.json({
+        user: {
+          id: 1,
+          nombre: 'Jairo Dannas',
+          email: 'jairo.dannas@dannas.com',
+          rol: 'ADMIN',
+          cargo: 'Gerente General y Propietario',
+        },
+        message: 'Acceso corporativo exitoso',
+      });
+    }
+
+    res.status(401).json({ error: 'Credenciales inválidas' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Arrancar servidor
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`=======================================================`);
+  console.log(`[SIGETRAD Backend] Servidor activo en puerto ${PORT}`);
+  console.log(`[SIGETRAD Backend] Base de Datos destino: ${dbConfig.database}@${dbConfig.host}`);
+  console.log(`=======================================================`);
+});
