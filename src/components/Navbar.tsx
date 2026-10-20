@@ -16,6 +16,8 @@ import {
   Ship,
   CheckCircle2,
   SlidersHorizontal,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { UserRole } from '../types';
 
@@ -25,7 +27,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPilotoModal }) => {
-  const { currentUser, setCurrentUser, users, restaurarDatosDemo, viajes, facturas, logout } = useApp();
+  const { currentUser, setCurrentUser, users, restaurarDatosDemo, viajes, facturas, logout, theme, toggleTheme } = useApp();
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
 
@@ -61,30 +63,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
   };
 
   return (
-    <header className="bg-slate-950/95 backdrop-blur-md text-white border-b border-slate-800/80 sticky top-0 z-40 shadow-sm">
+    <header className="bg-[#0B0F17]/95 backdrop-blur-xl text-white border-b border-[#1E293B] sticky top-0 z-40 shadow-[0_1px_12px_rgba(0,0,0,0.6)]">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: Corporate Brand Logo */}
           <div className="flex items-center gap-3">
             <button
               onClick={onToggleMobileMenu}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 lg:hidden cursor-pointer transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#1A2433] lg:hidden cursor-pointer transition-colors"
               aria-label="Abrir Menú"
             >
               <Menu className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-500/25 border border-blue-400/30 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#F4BA36]/15 border border-[#F4BA36]/40 flex items-center justify-center text-[#FFC82C] shadow-[0_0_15px_rgba(244,186,54,0.25)] shrink-0">
                 <Truck className="w-5 h-5 drop-shadow-xs" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-base tracking-tight text-white font-mono">
+                  <span className="font-extrabold text-base tracking-tight text-white font-mono uppercase">
                     SIGETRAD
                   </span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-gradient-to-r from-blue-900/70 to-indigo-900/70 text-blue-300 border border-blue-700/50 shadow-xs">
-                    Enterprise
+                  <div className="w-2 h-2 rounded-full bg-[#F4BA36] shadow-[0_0_8px_rgba(244,186,54,0.9)]"></div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#1A2433] text-[#FFC82C] border border-[#F4BA36]/30 shadow-xs">
+                    Enterprise TMS
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
@@ -96,22 +99,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
 
           {/* Center: Live Corporate Operational Telemetry */}
           <div className="hidden lg:flex items-center gap-2.5 text-xs text-slate-300">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#131B26] border border-[#1E293B] text-[11px] shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
               <span className="text-slate-400">Puerto:</span>
               <span className="font-semibold text-slate-200">Barrios y Sto. Tomás</span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] shadow-xs">
-              <Ship className="w-3.5 h-3.5 text-blue-400" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#131B26] border border-[#1E293B] text-[11px] shadow-xs">
+              <Ship className="w-3.5 h-3.5 text-[#0EA5E9]" />
               <span className="text-slate-400">Viajes en Ruta:</span>
-              <strong className="text-white font-mono">{viajesActivos}</strong>
+              <strong className="text-[#0EA5E9] font-mono">{viajesActivos}</strong>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-[11px] shadow-xs">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#131B26] border border-[#1E293B] text-[11px] shadow-xs">
+              <AlertCircle className="w-3.5 h-3.5 text-[#FFC82C]" />
               <span className="text-slate-400">Por Conciliar:</span>
-              <strong className="text-amber-300 font-mono">{facturasPendientes}</strong>
+              <strong className="text-[#FFC82C] font-mono">{facturasPendientes}</strong>
             </div>
           </div>
 
@@ -121,10 +124,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
             {onOpenPilotoModal && (
               <button
                 onClick={onOpenPilotoModal}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-950/40 hover:bg-purple-900/50 text-purple-300 border border-purple-800/50 transition-all cursor-pointer shadow-xs"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#1A2433] hover:bg-[#1E293B] text-slate-200 hover:text-[#FFC82C] border border-[#1E293B] transition-all cursor-pointer shadow-xs"
                 title="Abrir interfaz móvil para registrar pesajes en muelle"
               >
-                <Smartphone className="w-3.5 h-3.5 text-purple-400" />
+                <Smartphone className="w-3.5 h-3.5 text-[#FFC82C]" />
                 <span className="text-[11px]">Portal Piloto</span>
               </button>
             )}
@@ -133,10 +136,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
             <div className="relative">
               <button
                 onClick={() => setShowRoleSelector(!showRoleSelector)}
-                className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition-all text-xs cursor-pointer shadow-xs"
+                className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#131B26] hover:bg-[#1A2433] border border-[#1E293B] transition-all text-xs cursor-pointer shadow-xs"
                 title="Perfil corporativo activo"
               >
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 text-white font-bold flex items-center justify-center text-xs shadow-xs ring-1 ring-white/10">
+                <div className="w-7 h-7 rounded-lg bg-[#F4BA36] text-slate-950 font-bold flex items-center justify-center text-xs shadow-xs">
                   {currentUser.nombre.charAt(0)}
                 </div>
                 <div className="text-left hidden md:block">
@@ -186,6 +189,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
               )}
             </div>
 
+            {/* Theme Toggle Button (Modo Claro / Modo Oscuro) */}
+            <button
+              onClick={toggleTheme}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs border ${
+                theme === 'dark'
+                  ? 'bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border-amber-400/30'
+                  : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300 shadow-sm'
+              }`}
+              title={theme === 'dark' ? 'Cambiar a Modo Claro en el panel central' : 'Cambiar a Modo Oscuro en el panel central'}
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  <span className="hidden sm:inline">Modo Claro</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4 text-indigo-500" />
+                  <span className="hidden sm:inline">Modo Oscuro</span>
+                </>
+              )}
+            </button>
+
             {/* Reset Demo Data Button */}
             <button
               onClick={() => setShowConfirmReset(true)}
@@ -195,14 +221,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, onOpenPiloto
               <RotateCcw className="w-4 h-4" />
             </button>
 
-            {/* Direct Logout Button */}
+            {/* Preview Login Screen Button */}
             <button
               onClick={logout}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-rose-950/60 text-slate-300 hover:text-rose-300 border border-slate-800 hover:border-rose-800 transition-all cursor-pointer"
-              title="Cerrar sesión"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#F59E0B]/15 hover:bg-[#F59E0B]/25 text-[#FFC82C] border border-[#F59E0B]/40 transition-all cursor-pointer shadow-xs"
+              title="Cerrar sesión para ver y probar la nueva pantalla de Login"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Salir</span>
+              <LogOut className="w-3.5 h-3.5 text-[#FFC82C]" />
+              <span>Ver Login</span>
             </button>
           </div>
         </div>

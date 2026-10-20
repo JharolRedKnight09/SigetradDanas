@@ -1,6 +1,8 @@
 {
-  "name": "SIGETRAD - Transportes Dannas",
+  "name": "Remix SIGETRAD - Transportes Dannas",
   "description": "Sistema integral de gestión de transportes de góndolas de materiales a granel, viajes por buque, facturación, conciliación de pagos con retenciones y combustible.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

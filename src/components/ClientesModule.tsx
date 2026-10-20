@@ -143,7 +143,7 @@ export const ClientesModule: React.FC = () => {
               {clientes.length} registrados
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             Gestión de clientes, buques asociados y condición fiscal de Agente Retenedor de ISR/IVA.
           </p>
         </div>
@@ -151,7 +151,7 @@ export const ClientesModule: React.FC = () => {
         {canEdit && (
           <button
             onClick={() => handleOpenModal()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#F4BA36] hover:bg-[#FFC82C] text-slate-950 text-xs font-bold shadow-[0_0_15px_rgba(244,186,54,0.3)] transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Registrar Nuevo Cliente
@@ -160,19 +160,19 @@ export const ClientesModule: React.FC = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs flex items-center gap-3">
-        <Search className="w-4 h-4 text-slate-400 shrink-0" />
+      <div className="bg-[#131B26] p-3.5 rounded-xl border border-[#1E293B] shadow-[0_4px_16px_rgba(0,0,0,0.5)] flex items-center gap-3">
+        <Search className="w-4 h-4 text-[#F4BA36] shrink-0" />
         <input
           type="text"
           placeholder="Buscar cliente por razón social, código o NIT..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full text-xs text-slate-800 focus:outline-none placeholder-slate-400"
+          className="w-full text-xs text-white focus:outline-none placeholder-slate-500 bg-transparent"
         />
         {searchTerm && (
           <button
             onClick={() => setSearchTerm('')}
-            className="text-xs text-slate-400 hover:text-slate-600"
+            className="text-xs text-slate-400 hover:text-white"
           >
             Limpiar
           </button>
@@ -188,23 +188,23 @@ export const ClientesModule: React.FC = () => {
           return (
             <div
               key={cliente.id}
-              className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:border-blue-300 transition-all space-y-4"
+              className="bg-[#131B26] hover:bg-[#1A2433] rounded-xl border border-[#1E293B] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex flex-col justify-between hover:border-[#F4BA36]/40 transition-all space-y-4 group"
             >
               <div className="space-y-3">
                 {/* Title & Badge */}
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#1A2433] text-[#FFC82C] border border-[#F4BA36]/20">
                       {cliente.codigo}
                     </span>
-                    <h3 className="font-bold text-sm text-slate-900 mt-1 leading-snug">
+                    <h3 className="font-bold text-sm text-white mt-1 leading-snug group-hover:text-[#FFC82C] transition-colors">
                       {cliente.nombre}
                     </h3>
                   </div>
                   {canEdit && (
                     <button
                       onClick={() => handleOpenModal(cliente)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-[#FFC82C] hover:bg-[#1A2433] transition-colors"
                       title="Editar Cliente"
                     >
                       <Edit2 className="w-4 h-4" />

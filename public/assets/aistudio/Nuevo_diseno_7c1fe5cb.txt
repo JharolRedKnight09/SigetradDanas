@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"tertiary-container":"#70cdff","on-primary":"#402d00","surface-dim":"#0f131c","on-secondary-fixed-variant":"#005236","primary-fixed":"#ffdea3","outline":"#9c8f7a","error":"#ffb4ab","on-primary-fixed":"#261900","on-tertiary":"#00354a","danger-red":"#EF4444","on-tertiary-container":"#005676","border-subtle":"#1E293B","on-primary-container":"#694b00","on-secondary-fixed":"#002113","on-error-container":"#ffdad6","border-focus":"#F4BA36","surface-container-low":"#181c24","text-secondary":"#E2E8F0","surface-container-high":"#262a33","surface-container-highest":"#31353e","status-contract-green":"#10B981","surface-container-lowest":"#0a0e16","on-primary-fixed-variant":"#5d4200","text-muted":"#94A3B8","on-tertiary-fixed":"#001e2c","amber-bright":"#FFC82C","on-secondary":"#003824","tertiary-fixed-dim":"#7bd0ff","primary-fixed-dim":"#f8bd39","surface-container":"#1c2028","text-primary":"#FFFFFF","outline-variant":"#4f4534","surface-card-elevated":"#1A2433","on-background":"#dfe2ee","surface-bright":"#353942","surface-tint":"#f8bd39","status-spot-blue":"#0EA5E9","on-surface-variant":"#d3c5ae","on-error":"#690005","amber-dim":"#D99E18","secondary-fixed":"#6ffbbe","on-secondary-container":"#00311f","surface-base":"#0B0F17","on-surface":"#dfe2ee","secondary-fixed-dim":"#4edea3","primary":"#ffda96","inverse-on-surface":"#2c3039","surface":"#0f131c","surface-variant":"#31353e","secondary":"#4edea3","inverse-surface":"#dfe2ee","surface-card":"#131B26","on-tertiary-fixed-variant":"#004c69","tertiary-fixed":"#c4e7ff","background":"#0f131c","error-container":"#93000a","inverse-primary":"#7a5900","primary-container":"#f4ba36","tertiary":"#bbe4ff","secondary-container":"#00a572"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin":"2rem","space-lg":"1.5rem","gutter-mobile":"0.75rem","space-xs":"0.25rem","space-sm":"0.5rem","margin-mobile":"1rem","gutter":"1.5rem","space-xl":"2.5rem","space-md":"1rem"},"fontFamily":{"headline-lg-mobile":["Plus Jakarta Sans"],"table-data":["Inter"],"headline-xl-mobile":["Plus Jakarta Sans"],"body-lg":["Inter"],"label-lg":["Inter"],"label-sm":["Inter"],"body-md":["Inter"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"body-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"]},"fontSize":{"headline-lg-mobile":["26px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"table-data":["13px",{"lineHeight":"18px","letterSpacing":"-0.005em","fontWeight":"500"}],"headline-xl-mobile":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"600"}],"body-md":["15px",{"lineHeight":"24px","fontWeight":"400"}],"headline-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"headline-xl":["48px",{"lineHeight":"56px","letterSpacing":"-0.03em","fontWeight":"700"}],"body-sm":["13px",{"lineHeight":"20px","fontWeight":"400"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}],"headline-md":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script></head><body class="bg-surface-base font-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen"><header class="fixed top-0 left-0 right-0 w-full z-50 bg-surface-base/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.4)]"><div class="h-20 max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between"><a class="flex items-center gap-3.5 group" data-path="overview" href="#"><div class="flex flex-col"><div class="flex items-center gap-1.5"><span class="font-headline-md text-headline-md tracking-tight uppercase text-text-primary group-hover:text-amber-bright transition-colors">CARGOSON</span><div class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_rgba(244,186,54,0.8)]"></div></div><span class="font-label-sm text-label-sm tracking-wider uppercase text-text-muted">Transport Management Software</span></div></a><nav class="hidden xl:flex items-center gap-8" data-active-classes="text-amber-bright font-bold"><div class="relative group py-2"><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors inline-flex items-center gap-1" data-path="industries" href="#">Industries<span class="material-symbols-outlined text-[16px] text-text-muted group-hover:text-on-surface transition-transform group-hover:rotate-180">expand_more</span></a><div class="absolute left-0 top-full pt-2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200"><div class="w-60 bg-surface-card-elevated rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.6)] p-2 flex flex-col gap-1"><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="industries-electronics" href="#">Electronics &amp; High-Tech</a><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="industries-chemicals" href="#">Chemicals &amp; Hazardous</a><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="industries-machinery" href="#">Industrial Machinery</a><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="industries-printing" href="#">Printing &amp; Packaging</a></div></div></div><div class="relative group py-2"><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors inline-flex items-center gap-1" data-path="resources" href="#">Resources<span class="material-symbols-outlined text-[16px] text-text-muted group-hover:text-on-surface transition-transform group-hover:rotate-180">expand_more</span></a><div class="absolute left-0 top-full pt-2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200"><div class="w-64 bg-surface-card-elevated rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.6)] p-2 flex flex-col gap-1"><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="carrier-integrations" href="#">Carrier Integrations</a><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="erp-integrations" href="#">ERP &amp; WMS Connectors</a><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="shipment-tracking" href="#">Visibility &amp; Tracking</a><a class="px-3 py-2 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="co2-calculator" href="#">CO2 Emission Calculator</a></div></div></div><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="pricing" href="#">Pricing</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="contact" href="#">Contact Us</a></nav><div class="flex items-center gap-4"><button class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-label-sm text-label-sm text-text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[18px] text-text-muted">language</span><span>EN</span><span class="material-symbols-outlined text-[14px] text-text-muted">keyboard_arrow_down</span></button><a class="hidden sm:inline-flex font-label-md text-label-md text-text-secondary hover:text-amber-bright transition-colors px-3 py-2" data-path="login" href="#">Sign in</a><a class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg bg-primary-container text-on-primary-container font-label-md text-label-md font-bold tracking-tight shadow-[0_0_20px_-3px_rgba(244,186,54,0.3)] hover:bg-amber-bright hover:shadow-[0_0_24px_rgba(255,200,44,0.45)] transition-all" data-path="consultation" href="#">Book a free consultation</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 bg-surface-base min-h-screen"><div class="flex flex-col w-full text-on-surface">
+<!-- 1. HERO SECTION -->
+<section class="relative overflow-hidden pt-8 pb-20 lg:pt-14 lg:pb-32">
+<!-- Ambient diagonal lighting accents -->
+<div class="pointer-events-none absolute -top-40 right-0 w-[680px] h-[680px] bg-gradient-to-bl from-primary-container/15 via-primary-container/5 to-transparent rounded-full blur-3xl opacity-70"></div>
+<div class="pointer-events-none absolute top-1/2 left-0 -translate-x-1/2 w-96 h-96 bg-secondary/5 rounded-full blur-2xl"></div>
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+<!-- Left: Pitch & Hero CTAs -->
+<div class="lg:col-span-6 flex flex-col items-start z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-card-elevated shadow-sm mb-6">
+<span class="w-2 h-2 rounded-full bg-status-contract-green animate-pulse"></span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted">Cloud Transport Management · 2026 Ready</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-text-primary tracking-tight leading-tight mb-6">
+            Transport Management System for <span class="text-amber-bright">Manufacturers</span> and <span class="text-amber-bright">Wholesalers</span>
+</h1>
+<p class="font-body-lg text-body-lg text-text-muted mb-8 max-w-xl">
+            Your rates. Your carriers. Not a middleman.
+          </p>
+<div class="flex flex-wrap items-center gap-4 mb-10 w-full sm:w-auto">
+<a class="inline-flex items-center justify-center px-8 py-3.5 rounded-lg bg-primary-container text-on-primary-container font-label-lg text-label-lg font-bold shadow-[0_0_24px_rgba(244,186,54,0.35)] hover:bg-amber-bright hover:shadow-[0_0_32px_rgba(255,200,44,0.5)] transition-all" data-path="signup" href="#">
+              Start now
+            </a>
+<a class="inline-flex items-center justify-center px-7 py-3.5 rounded-lg bg-surface-card hover:bg-surface-card-elevated text-text-primary font-label-lg text-label-lg transition-all shadow-sm hover:shadow-md" data-path="consultation" href="#">
+<span class="material-symbols-outlined text-[20px] mr-2 text-primary">play_circle</span>
+              Book demo
+            </a>
+</div>
+<div class="flex flex-col sm:flex-row sm:items-center gap-4 text-text-muted font-body-sm text-body-sm pt-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-status-contract-green text-[18px]">verified</span>
+<span>Trusted by leading international brands</span>
+</div>
+<span class="hidden sm:inline text-outline-variant">·</span>
+<a class="text-amber-bright hover:underline inline-flex items-center gap-1 font-label-sm text-label-sm" data-path="customer-stories" href="#">
+              Read customer stories <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+<!-- Mobile App badges -->
+<div class="mt-8 flex items-center gap-4 pt-6">
+<div class="flex items-center gap-1.5 text-text-muted">
+<span class="material-symbols-outlined text-amber-bright text-[18px]">smartphone</span>
+<span class="font-label-sm text-label-sm">Also available on mobile</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="px-3 py-1.5 rounded-md bg-surface-card hover:bg-surface-card-elevated flex items-center gap-2 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-text-primary">phone_iphone</span>
+<span class="font-label-sm text-label-sm text-text-primary">App Store</span>
+</div>
+<div class="px-3 py-1.5 rounded-md bg-surface-card hover:bg-surface-card-elevated flex items-center gap-2 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-text-primary">android</span>
+<span class="font-label-sm text-label-sm text-text-primary">Google Play</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Hyper-realistic interactive logistics carrier comparison tablet / window -->
+<div class="lg:col-span-6 z-10">
+<div class="relative rounded-2xl bg-surface-card shadow-[0_24px_50px_rgba(0,0,0,0.6)] overflow-hidden">
+<!-- Window frame bar -->
+<div class="bg-surface-container-high px-5 py-3.5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-danger-red/80"></div>
+<div class="w-3 h-3 rounded-full bg-amber-bright/80"></div>
+<div class="w-3 h-3 rounded-full bg-status-contract-green/80"></div>
+<span class="ml-3 font-label-sm text-label-sm text-text-muted font-mono">cargoson.cloud/dispatcher/rates</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider bg-primary-container/20 text-primary-fixed-dim uppercase">Live Rates</span>
+<div class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center text-[11px] font-bold text-text-primary">AV</div>
+</div>
+</div>
+<!-- White/light table backdrop matching reference container -->
+<div class="bg-white text-slate-900 p-6 overflow-x-auto">
+<!-- Mini app header -->
+<div class="flex items-center justify-between mb-5">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-lg bg-amber-400/20 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 text-sm tracking-tight leading-none">My carriers</h3>
+<p class="text-[11px] text-slate-500 mt-0.5">Route: Tallinn (EE) → Frankfurt Hub (DE)</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[13px] text-emerald-600">verified_user</span> Direct Contract
+                  </span>
+</div>
+</div>
+<!-- Carrier rate rows -->
+<table class="w-full text-left font-table-data text-table-data">
+<thead>
+<tr class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">
+<th class="pb-2 font-medium">Carrier</th>
+<th class="pb-2 font-medium">Collection</th>
+<th class="pb-2 font-medium text-right">CO₂e</th>
+<th class="pb-2 font-medium text-right pr-3">Price</th>
+<th class="pb-2 font-medium text-right">Action</th>
+</tr>
+</thead>
+<tbody class="space-y-1">
+<!-- Row 1: DHL -->
+<tr class="group hover:bg-slate-50 transition-colors">
+<td class="py-2.5 font-bold text-slate-900 flex items-center gap-2">
+<span class="px-2 py-0.5 bg-yellow-400 text-red-700 font-black rounded text-[11px] tracking-tighter">DHL</span>
+<span class="font-semibold text-xs text-slate-800">DHL Freight</span>
+</td>
+<td class="py-2.5 text-slate-600 text-xs">2 Apr 2027</td>
+<td class="py-2.5 text-slate-500 text-xs text-right font-mono">168 kg</td>
+<td class="py-2.5 text-right pr-3">
+<span class="font-bold text-xs text-slate-900 mr-1.5">112 €</span>
+<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">Contract</span>
+</td>
+<td class="py-2.5 text-right">
+<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-400 hover:bg-amber-500 text-slate-950 transition-colors shadow-sm">Book</button>
+</td>
+</tr>
+<!-- Row 2: DACHSER -->
+<tr class="group hover:bg-slate-50 transition-colors">
+<td class="py-2.5 font-bold text-slate-900 flex items-center gap-2">
+<span class="px-2 py-0.5 bg-blue-900 text-yellow-400 font-bold rounded text-[10px] tracking-tight">DACHSER</span>
+<span class="font-semibold text-xs text-slate-800">Intelligent Logistics</span>
+</td>
+<td class="py-2.5 text-slate-600 text-xs">5 Apr 2027</td>
+<td class="py-2.5 text-slate-500 text-xs text-right font-mono">27 kg</td>
+<td class="py-2.5 text-right pr-3">
+<span class="font-bold text-xs text-slate-900 mr-1.5">64 €</span>
+<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">Contract</span>
+</td>
+<td class="py-2.5 text-right">
+<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-400 hover:bg-amber-500 text-slate-950 transition-colors shadow-sm">Book</button>
+</td>
+</tr>
+<!-- Row 3: DSV -->
+<tr class="group hover:bg-slate-50 transition-colors">
+<td class="py-2.5 font-bold text-slate-900 flex items-center gap-2">
+<span class="px-2 py-0.5 bg-blue-950 text-white font-black rounded text-[10px]">DSV</span>
+<span class="font-semibold text-xs text-slate-800">Road Standard</span>
+</td>
+<td class="py-2.5 text-slate-600 text-xs">5 Apr 2027</td>
+<td class="py-2.5 text-slate-500 text-xs text-right font-mono">31 kg</td>
+<td class="py-2.5 text-right pr-3">
+<span class="font-bold text-xs text-slate-900 mr-1.5">58 €</span>
+<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-sky-800">Spot</span>
+</td>
+<td class="py-2.5 text-right">
+<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-400 hover:bg-amber-500 text-slate-950 transition-colors shadow-sm">Book</button>
+</td>
+</tr>
+<!-- Row 4: FedEx -->
+<tr class="group hover:bg-slate-50 transition-colors">
+<td class="py-2.5 font-bold text-slate-900 flex items-center gap-2">
+<span class="px-2 py-0.5 bg-purple-900 text-orange-400 font-bold rounded text-[10px]">FedEx</span>
+<span class="font-semibold text-xs text-slate-800">Priority Express</span>
+</td>
+<td class="py-2.5 text-slate-600 text-xs">2 Apr 2027</td>
+<td class="py-2.5 text-slate-500 text-xs text-right font-mono">248 kg</td>
+<td class="py-2.5 text-right pr-3">
+<span class="font-bold text-xs text-slate-900 mr-1.5">162 €</span>
+<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">Contract</span>
+</td>
+<td class="py-2.5 text-right">
+<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-400 hover:bg-amber-500 text-slate-950 transition-colors shadow-sm">Book</button>
+</td>
+</tr>
+<!-- Row 5: DPD -->
+<tr class="group hover:bg-slate-50 transition-colors">
+<td class="py-2.5 font-bold text-slate-900 flex items-center gap-2">
+<span class="px-2 py-0.5 bg-red-600 text-white font-bold rounded text-[10px]">dpd</span>
+<span class="font-semibold text-xs text-slate-800">Classic Europe</span>
+</td>
+<td class="py-2.5 text-slate-600 text-xs">2 Apr 2027</td>
+<td class="py-2.5 text-right">
+<span class="text-xs font-mono text-slate-500 block">42 kg</span>
+<span class="text-[9px] text-emerald-700 font-medium block -mt-1">Compensating</span>
+</td>
+<td class="py-2.5 text-right pr-3">
+<span class="font-bold text-xs text-slate-900 mr-1.5">95 €</span>
+<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-sky-100 text-sky-800">Spot</span>
+</td>
+<td class="py-2.5 text-right">
+<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-400 hover:bg-amber-500 text-slate-950 transition-colors shadow-sm">Book</button>
+</td>
+</tr>
+<!-- Row 6: Kuehne+Nagel -->
+<tr class="group hover:bg-slate-50 transition-colors">
+<td class="py-2.5 font-bold text-slate-900 flex items-center gap-2">
+<span class="px-2 py-0.5 bg-blue-800 text-white font-bold rounded text-[10px]">K+N</span>
+<span class="font-semibold text-xs text-slate-800">Kuehne+Nagel</span>
+</td>
+<td class="py-2.5 text-slate-600 text-xs">5 Apr 2027</td>
+<td class="py-2.5 text-slate-500 text-xs text-right font-mono">24 kg</td>
+<td class="py-2.5 text-right pr-3">
+<span class="font-bold text-xs text-slate-900 mr-1.5">71 €</span>
+<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">Contract</span>
+</td>
+<td class="py-2.5 text-right">
+<button class="px-3 py-1 text-xs font-semibold rounded bg-amber-400 hover:bg-amber-500 text-slate-950 transition-colors shadow-sm">Book</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Mini summary footnote inside widget -->
+<div class="mt-4 pt-3 flex items-center justify-between text-[11px] text-slate-400">
+<span class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 6 of 900+ active partner carriers evaluated
+                </span>
+<span class="text-slate-600 font-medium">Automatic surcharge sync ON</span>
+</div>
+</div>
+<!-- Bottom badge info bar -->
+<div class="bg-surface-card-elevated px-5 py-3 flex items-center justify-between text-text-muted font-body-sm text-body-sm">
+<span class="flex items-center gap-1.5 text-text-secondary">
+<span class="material-symbols-outlined text-[16px] text-amber-bright">electric_bolt</span> Fast Ad-Hoc Request Engine
+              </span>
+<span class="text-text-muted font-label-sm text-label-sm">No brokerage markup</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. CONNECTIVITY & INTEGRATIONS BANNER -->
+<section class="w-full bg-surface-container-low py-16 lg:py-24">
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-14">
+<div class="lg:col-span-5">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-card text-amber-bright font-label-sm text-label-sm mb-4">
+<span class="material-symbols-outlined text-[14px]">hub</span> Instant ERP &amp; TMS Hookup
+          </div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mb-4 tracking-tight">
+            Connect your software <span class="text-amber-bright">with your carriers</span>
+</h2>
+</div>
+<div class="lg:col-span-7">
+<p class="font-body-md text-body-md text-text-muted mb-4">
+            Microsoft Business Central, Odoo, Magento, WooCommerce, Directo… Whichever system you’re using, we can hook it up in no time.
+          </p>
+<p class="font-body-sm text-body-sm text-text-secondary">
+            Don’t have your systems ready or no interest to connect it? No problem, you can start manually and build the integrations when you are ready.
+          </p>
+</div>
+</div>
+<!-- Flow Pill Cards: Tracking, Comparison, Booking, Statistics, Notifications, API -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 mb-14">
+<div class="p-4 rounded-xl bg-surface-card hover:bg-surface-card-elevated transition-all flex flex-col items-center text-center group">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">troubleshoot</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">Tracking</span>
+<span class="text-[11px] text-text-muted mt-1">Multi-carrier status</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-card hover:bg-surface-card-elevated transition-all flex flex-col items-center text-center group">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-amber-bright mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">balance</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">Comparison</span>
+<span class="text-[11px] text-text-muted mt-1">Contract vs Spot</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-card hover:bg-surface-card-elevated transition-all flex flex-col items-center text-center group">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-secondary mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">event_available</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">Booking</span>
+<span class="text-[11px] text-text-muted mt-1">Instant confirmation</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-card hover:bg-surface-card-elevated transition-all flex flex-col items-center text-center group">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-status-spot-blue mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">insights</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">Statistics</span>
+<span class="text-[11px] text-text-muted mt-1">Spend &amp; volume</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-card hover:bg-surface-card-elevated transition-all flex flex-col items-center text-center group">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-amber-dim mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">notifications_active</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">Notifications</span>
+<span class="text-[11px] text-text-muted mt-1">Custom branded alerts</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-card hover:bg-surface-card-elevated transition-all flex flex-col items-center text-center group">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary-fixed mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[20px]">code</span>
+</div>
+<span class="font-label-md text-label-md text-text-primary">REST API</span>
+<span class="text-[11px] text-text-muted mt-1">2,000+ connectors</span>
+</div>
+</div>
+<!-- Marquee style ERP & Carrier badge chips -->
+<div class="rounded-xl bg-surface-card p-6 flex flex-wrap items-center justify-between gap-6">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-primary-container">sync_alt</span>
+          Pre-built ERP &amp; Carrier Connectors:
+        </span>
+<div class="flex flex-wrap items-center gap-3">
+<span class="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-text-secondary">Dynamics 365 Business Central</span>
+<span class="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-text-secondary">SAP ERP / S/4HANA</span>
+<span class="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-text-secondary">Odoo</span>
+<span class="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-text-secondary">NetSuite</span>
+<span class="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-text-secondary">Directo</span>
+<span class="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-text-secondary">Magento</span>
+<span class="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-xs font-semibold text-text-secondary">WooCommerce</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. CORE FEATURE HIGHLIGHTS (Bento grid with mobile mockups) -->
+<section class="py-20 lg:py-32">
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="max-w-3xl mb-16">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-amber-bright font-bold">The heart of your logistics</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mt-2 mb-4 tracking-tight">
+          Make wise transport decisions, instantly
+        </h2>
+<p class="font-body-md text-body-md text-text-muted">
+          Upload and compare your existing pricelists and lead-times, request ad-hoc prices, book your preferred carrier, track your shipments, monitor goods collection and arrivals—all in one smart system.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Card 1: All logistics info in one smart dashboard -->
+<div class="rounded-2xl bg-surface-card p-8 flex flex-col justify-between group hover:bg-surface-card-elevated transition-all shadow-md">
+<div class="mb-6">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 text-primary-container flex items-center justify-center mb-5">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-text-primary mb-3">All your logistics info in one smart dashboard</h3>
+<p class="font-body-md text-body-md text-text-muted">
+              No need to chase shipments from different carrier portals or e-mails. Price sheets, transit times, live tracking, freight documents, and spend analytics in one unified cloud SaaS.
+            </p>
+</div>
+<div class="rounded-xl overflow-hidden bg-surface-container-lowest p-2 shadow-inner">
+<img alt="Cargoson Mobile App Dashboard" class="w-full h-56 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1X-kziIeyfeuutlL7OXZMMBMqW61im_wvzQp3c8PD4akpRIyN-vtutcWxwU6iGcmCmA7A5LbBynEGGMqcHMrFXbbHJKWGoRx8RosdDV2dfyleIY4wApCifb5icA0Dm-gSfofkVSC9Tva7bf9N-nMdOBme0-dbkORA9bRxZWZGjjnkcboVAZcTbVH07j2ZFvltr5S_B2dg4bQMeKhSHqx0_ujv3bxYdothqFEgRRb_AOJFb5XnZ1Icw-VaE"/>
+</div>
+</div>
+<!-- Card 2: Continue existing relationships with carriers -->
+<div class="rounded-2xl bg-surface-card p-8 flex flex-col justify-between group hover:bg-surface-card-elevated transition-all shadow-md">
+<div class="mb-6">
+<div class="w-10 h-10 rounded-lg bg-secondary/20 text-secondary flex items-center justify-center mb-5">
+<span class="material-symbols-outlined text-[24px]">handshake</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-text-primary mb-3">Continue your existing relationships with carriers</h3>
+<p class="font-body-md text-body-md text-text-muted">
+              Keep all your existing negotiated rates with current partners and seamlessly activate new carriers. 1,000+ plug-and-play direct carrier integrations, growing daily.
+            </p>
+</div>
+<div class="rounded-xl overflow-hidden bg-surface-container-lowest p-2 shadow-inner">
+<img alt="Carrier network relations view" class="w-full h-56 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1UtrPJrovZz9jzQDfLiy0OTtUMl8FmguRc8rPFpcAcH7uGFdxesa9KdevZ7TpZ0_CI1XOqeejTMpnGPpc5lx_wqrjmUzNeDFYB3AN08g_Z7BewCH-hJ_mmN-4pZGaTYAFZJwRBsmHxz78U_a329ciHdHKf-a2xBEB0RdvIZ-tHGhTGIyM5JSs__0LTU-uFe6FGqQKNEsr3DJmZn0oKISLmlqDSIGI73lqdMUP3PgKB7r92q3RYxbM_cdSA"/>
+</div>
+</div>
+<!-- Card 3: Insanely easy to use -->
+<div class="rounded-2xl bg-surface-card p-8 flex flex-col justify-between group hover:bg-surface-card-elevated transition-all shadow-md">
+<div class="mb-6">
+<div class="w-10 h-10 rounded-lg bg-amber-bright/20 text-amber-bright flex items-center justify-center mb-5">
+<span class="material-symbols-outlined text-[24px]">rocket_launch</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-text-primary mb-3">Insanely easy to use</h3>
+<p class="font-body-md text-body-md text-text-muted">
+              You just need to know your users and carriers—we handle full onboarding and configuration. Zero lengthy rollout roadblocks. Transparent dispatching that teams actually enjoy using.
+            </p>
+</div>
+<div class="rounded-xl overflow-hidden bg-surface-container-lowest p-2 shadow-inner">
+<img alt="User friendly shipment interface" class="w-full h-56 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1VyDceZB3Zp60giIySRKeFEZFeAR4AWJlTJGuRlu-Uz1w6nphHaF1AT9bi_i8IhqbHFau56CfTpAmvN0_rCUnCgpQjdmI4xnBUdngPp1_6166XSZe1oUPG1b67_ztqYJPccVo9jwfYN4mXf07yE2Q417SttwFJbLKO3zUsxB-6P-PBE3h6V0Vh3NNLUOY0CI4WKkcBTVKPTc-Px-nbd3pQZG7kFO1T56eFfZvc9or8Rj7DRBds"/>
+</div>
+</div>
+<!-- Card 4: Automated logistics data for key people -->
+<div class="rounded-2xl bg-surface-card p-8 flex flex-col justify-between group hover:bg-surface-card-elevated transition-all shadow-md">
+<div class="mb-6">
+<div class="w-10 h-10 rounded-lg bg-status-spot-blue/20 text-status-spot-blue flex items-center justify-center mb-5">
+<span class="material-symbols-outlined text-[24px]">share_location</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-text-primary mb-3">Automated logistics data for key people</h3>
+<p class="font-body-md text-body-md text-text-muted">
+              Personalized branded shipping notifications keep purchasing, sales teams, and warehouse staff in sync with precise collection and arrival ETAs without endless email chains.
+            </p>
+</div>
+<div class="rounded-xl overflow-hidden bg-surface-container-lowest p-2 shadow-inner">
+<img alt="Shipment notification system" class="w-full h-56 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1UmYgA4su-X8bCod7Ivnlz5sSUnGJvnLPQ_TtgDwaqYzr-n1jje8GlgD7xj-joS09lpXYjkrY7HGuHjC3KVW38l8lP--SW6l0HtQ6rEZi-XffeKmT3r1qky1B-Ed_ZTuJYaa0_NCh_wfsP37ESXBzQ0tVkHhD8ChFa8pSXHeptCfo95lfdiazLnZ1sg7IvFYNQJTf6v5QFecp9dbMZnQWZCqdufxi8VgZZ0VmEKYZCfqrtNrsmKiIJLmw"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. SUSTAINABILITY & GREEN LOGISTICS SPOTLIGHT -->
+<section class="py-16 bg-surface-container-low relative overflow-hidden">
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="rounded-3xl bg-surface-card p-8 lg:p-14 relative overflow-hidden shadow-xl">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+<div class="lg:col-span-7">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm mb-4">
+<span class="material-symbols-outlined text-[16px]">eco</span>
+<span>Green Logistics Standard</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mb-4 tracking-tight">
+              Reduce your CO₂ footprint with each smart decision 🌱
+            </h2>
+<p class="font-body-md text-body-md text-text-muted mb-6">
+              Pre-calculated CO₂ emission estimation for every single shipment. Automatically display GLEC-compliant carbon output next to carrier rates so your team can make economically and ecologically optimal freight bookings.
+            </p>
+<div class="flex flex-wrap items-center gap-4">
+<a class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md font-bold shadow-md hover:bg-secondary-fixed transition-all" data-path="co2-calculator" href="#">
+<span>Do a quick test calculation</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+<span class="text-text-muted font-body-sm text-body-sm">Supports European GLEC framework</span>
+</div>
+</div>
+<!-- Interactive mini CO2 estimator widget preview -->
+<div class="lg:col-span-5">
+<div class="rounded-2xl bg-surface-card-elevated p-6 shadow-lg">
+<div class="flex items-center justify-between pb-4 mb-4">
+<span class="font-label-md text-label-md text-text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">co2</span> Instant Route Emission Test
+                </span>
+<span class="px-2 py-0.5 rounded text-[11px] font-mono bg-status-contract-green/20 text-status-contract-green">Calculated</span>
+</div>
+<div class="space-y-3 font-table-data text-table-data">
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-base">
+<span class="text-text-muted">Origin / Destination</span>
+<span class="text-text-primary font-semibold">Tallinn (EE) → Frankfurt (DE)</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-base">
+<span class="text-text-muted">Cargo specs</span>
+<span class="text-text-primary font-semibold">2 EUR Pallets / 850 kg</span>
+</div>
+<div class="flex items-center justify-between p-3.5 rounded-lg bg-secondary/10">
+<span class="text-secondary font-semibold">Estimated CO₂e</span>
+<div class="text-right">
+<span class="text-headline-sm font-headline-sm text-secondary font-bold">124 kg</span>
+<span class="block text-[10px] text-text-muted">Road freight standard</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-3 flex items-center justify-between text-[12px] text-text-muted">
+<span>Offset status: Ready for compensation</span>
+<span class="text-secondary font-medium">Verified by EcoTransIT</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. REAL INDUSTRIAL OPERATIONS GALLERY -->
+<section class="py-12 bg-surface-base">
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="flex items-center justify-between mb-8">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-amber-bright font-bold">Field Deployment</span>
+<h3 class="font-headline-md text-headline-md text-text-primary mt-1">Powering Real Warehouses &amp; Global Cross-Docks</h3>
+</div>
+<span class="hidden md:inline-block text-text-muted font-body-sm text-body-sm">Active in 30+ European logistics hubs</span>
+</div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="rounded-xl overflow-hidden group relative h-48 bg-surface-card">
+<img alt="Pallet staging and cross dock sorting" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1Uni6tO3adTt50O_OGKKzxvHRELxpKyuErjreI7ityV1XMA5ibhbABWh53Du-aMb4m4m-3reiPZvBgZhWBkQl3FRPolQMPzgkpyFrWEgIhcpCo1jG4YDBFyJrXL1lS97CFKXkwpcGBt5UNfCTWoZGzHwngaPgDUhliiRk5UO6w5yk7kG_FmE2qQDJOCi_KEJCe8pcyqzZYGBDXpLC1coxgb2EKqi3Vzr-_M22KgB3NzpxRvGv2_Lsg1WuQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-base/90 via-transparent to-transparent flex items-end p-4">
+<span class="font-label-sm text-label-sm text-text-primary">High-volume outbound packaging</span>
+</div>
+</div>
+<div class="rounded-xl overflow-hidden group relative h-48 bg-surface-card">
+<img alt="Forklift loading trailer with Cargoson dispatch" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1UAl4HJgN1i-6i1mSRnVd0Zwz2Jq0MiYmzTmt99ZXNP9NX-BDuJnd-Bqch9emkv1UfEes2YsF7Z9xAVb-9OX1LqD5KwSMX2fnYU9S2R7SW54e0RvpQ_WJ_OScOHySjcaeHTrQD5qvVle-ojrFdE_193zgKogb65WPoHD1oQIPyYPcsyrgQBHdruqSGUX8EbjTrMXVkJeguU_vken_v9nn2DtdGN7casokA_6dYnTa9q2zHahEqJ6qH9bA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-base/90 via-transparent to-transparent flex items-end p-4">
+<span class="font-label-sm text-label-sm text-text-primary">Direct ramp booking &amp; dock sync</span>
+</div>
+</div>
+<div class="rounded-xl overflow-hidden group relative h-48 bg-surface-card">
+<img alt="Industrial manufacturing facility logistics" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1V2sL_SnfJ-ayA92tnbNwyfBt6ToCQBTbZQ-lGoA6FSRGkfYWFqxXpDuQH90QuWYTDpv6HXkKo_2GjhAI6tEXBohOTZleO9ys6FXObw3cR4Up1ikow4hR-AgdOoCN81SJKHLtT1JKcbQVAIi2GpG4HoYhrDf9V2Dcll_rEG2TX8rChxhA9Qj2MjSXDFMaHuWQZRjGuPs2tWNfUXY1Rr6flCHUl0n0jJ1SxvF-NSBb1q2zW4JN4-98lB_Fg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-base/90 via-transparent to-transparent flex items-end p-4">
+<span class="font-label-sm text-label-sm text-text-primary">Heavy machinery &amp; component exports</span>
+</div>
+</div>
+<div class="rounded-xl overflow-hidden group relative h-48 bg-surface-card">
+<img alt="Automated parcel sorting and barcode scanning" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1UOev9bwwdFYvNnjf_oQADBoLrZjzGPmxDQ5JciSrcSkQ8YkrsTFCGqmZOj949lF44Eg1WPF7G661yZAF2ByjLZ5jLxIBajfwAMtl9tZ2nMO5Vop3xCnu7lJOhXB47Jmwm8poHQT2t9e8CkD42o3DMwqR1Oa4otK6lN7O0BkrBvDatHSCxAqHkjWbsVY4OxBhhf0snwD9QH6ECqkRja9zcIPU_vfHbJwi-gdD3u9bCavsVQqBzumgu12YM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-base/90 via-transparent to-transparent flex items-end p-4">
+<span class="font-label-sm text-label-sm text-text-primary">Multi-carrier barcode labeling</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. AUTHENTIC CUSTOMER STORIES & SOCIAL PROOF -->
+<section class="py-20 lg:py-32 bg-surface-container-low">
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-amber-bright font-bold">Client Success</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mt-2 tracking-tight">
+            Customer Stories
+          </h2>
+</div>
+<a class="inline-flex items-center gap-1.5 text-amber-bright hover:text-primary font-label-md text-label-md" data-path="customer-stories" href="#">
+<span>Explore all customer case studies</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Story 1: Andreas Valk (Konesko) -->
+<div class="rounded-2xl bg-surface-card p-7 flex flex-col justify-between hover:bg-surface-card-elevated transition-all shadow-md">
+<div>
+<div class="flex items-center gap-1 text-amber-bright mb-4">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+</div>
+<p class="font-body-md text-body-md text-text-primary font-medium mb-6 italic">
+              "Cargoson has brought a clear time gain and systematic approach to our logistics work."
+            </p>
+</div>
+<div class="flex items-center gap-3.5 pt-4">
+<img alt="Andreas Valk portrait" class="w-12 h-12 rounded-full object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida/AEtjO1VEI9fPYVjKwPE4CkuIq32r3Iztb5nmM1cMMSRUKGG78JGjlyVYQ-mfkwqBxAnO_l2j-ZyuSn7CeH08sHhZTNK9ehWijQ2fUw9kmqrYRrieMrvTC7JvTowrNUlVPYagEagEgOf7ekhfviqjaOFndpUBxrATRKDArvNVataJSkN4COnY736CWf7fj0xZ7pkp6wruI3eAEBgbHP91u7YGl9A-I28Iyn8Gxt4cvvYlrxyGVQDMXyRpDDid7nQ"/>
+<div>
+<h4 class="font-label-md text-label-md text-text-primary font-bold">Andreas Valk</h4>
+<p class="text-[12px] text-text-muted">Logistics Manager at Konesko</p>
+<p class="text-[11px] text-primary">Electric motors &amp; crane components</p>
+</div>
+</div>
+</div>
+<!-- Story 2: Gregg Brown (Starship) -->
+<div class="rounded-2xl bg-surface-card p-7 flex flex-col justify-between hover:bg-surface-card-elevated transition-all shadow-md">
+<div>
+<div class="flex items-center gap-1 text-amber-bright mb-4">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+</div>
+<p class="font-body-md text-body-md text-text-primary font-medium mb-6 italic">
+              "Cargoson meets our needs perfectly... much more intuitive and easier to use than US small package delivery portals."
+            </p>
+</div>
+<div class="flex items-center gap-3.5 pt-4">
+<div class="w-12 h-12 rounded-full bg-status-spot-blue/20 flex items-center justify-center text-status-spot-blue font-bold text-sm">
+              GB
+            </div>
+<div>
+<h4 class="font-label-md text-label-md text-text-primary font-bold">Gregg Brown</h4>
+<p class="text-[12px] text-text-muted">Senior Logistics Specialist at Starship</p>
+<p class="text-[11px] text-status-spot-blue">Autonomous delivery robot manufacturer</p>
+</div>
+</div>
+</div>
+<!-- Story 3: Helen Erg (Bolt) -->
+<div class="rounded-2xl bg-surface-card p-7 flex flex-col justify-between hover:bg-surface-card-elevated transition-all shadow-md">
+<div>
+<div class="flex items-center gap-1 text-amber-bright mb-4">
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+<span class="material-symbols-outlined text-[18px]">star</span>
+</div>
+<p class="font-body-md text-body-md text-text-primary font-medium mb-6 italic">
+              "Cargoson took our pan-European logistics management to a new level."
+            </p>
+</div>
+<div class="flex items-center gap-3.5 pt-4">
+<div class="w-12 h-12 rounded-full bg-status-contract-green/20 flex items-center justify-center text-status-contract-green font-bold text-sm">
+              HE
+            </div>
+<div>
+<h4 class="font-label-md text-label-md text-text-primary font-bold">Helen Erg</h4>
+<p class="text-[12px] text-text-muted">Logistics Manager at Bolt</p>
+<p class="text-[11px] text-status-contract-green">Ride-hailing &amp; mobility platform</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Additional client quotes mini row -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+<div class="p-5 rounded-xl bg-surface-card flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-bright text-[20px] mt-0.5">format_quote</span>
+<div>
+<p class="font-body-sm text-body-sm text-text-secondary italic mb-2">
+              "Our transport partners keep shipment data updated and that is a significant time-saver for us."
+            </p>
+<span class="font-label-sm text-label-sm text-text-primary font-semibold">Toomas Veskus</span>
+<span class="text-[11px] text-text-muted"> — Logistics Manager at Onninen AS Baltics (Electrical &amp; Plumbing)</span>
+</div>
+</div>
+<div class="p-5 rounded-xl bg-surface-card flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-bright text-[20px] mt-0.5">format_quote</span>
+<div>
+<p class="font-body-sm text-body-sm text-text-secondary italic mb-2">
+              "We use Cargoson on a daily basis. Orders, price comparisons, inquiries - all in one place and works very quickly."
+            </p>
+<span class="font-label-sm text-label-sm text-text-primary font-semibold">Piret Teras</span>
+<span class="text-[11px] text-text-muted"> — Warehouse Manager at Trimtex Baltic (Sportswear manufacturer)</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 7. LOGISTICS INSIGHTS & KNOWLEDGE CENTER (Blog) -->
+<section class="py-20 lg:py-28">
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-amber-bright font-bold">Industry Analysis</span>
+<h2 class="font-headline-lg text-headline-lg text-text-primary mt-1 tracking-tight">
+            Logistics Insights &amp; Guides
+          </h2>
+</div>
+<a class="font-label-md text-label-md text-text-muted hover:text-amber-bright transition-colors inline-flex items-center gap-1" data-path="blog" href="#">
+          View all 40+ TMS research guides <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Post 1 -->
+<div class="rounded-2xl bg-surface-card overflow-hidden flex flex-col justify-between hover:bg-surface-card-elevated transition-all shadow-md group">
+<div class="p-6">
+<div class="flex items-center gap-2 mb-3">
+<span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-primary-container/20 text-amber-bright">Products</span>
+<span class="text-[11px] text-text-muted">By Rasmus Leichter</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary group-hover:text-amber-bright transition-colors mb-3">
+              How much does transport management software (TMS) cost?
+            </h3>
+<p class="font-body-sm text-body-sm text-text-muted mb-4">
+              Prices and costs of a modern transportation management system. Real numbers analyzed across 22 TMS and parcel shipping providers, with calculated ROI scenarios.
+            </p>
+</div>
+<div class="px-6 pb-6 pt-2">
+<a class="font-label-sm text-label-sm text-amber-bright hover:underline inline-flex items-center gap-1" data-path="blog-tms-cost" href="#">
+              Continue reading <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Post 2 -->
+<div class="rounded-2xl bg-surface-card overflow-hidden flex flex-col justify-between hover:bg-surface-card-elevated transition-all shadow-md group">
+<div class="p-6">
+<div class="flex items-center gap-2 mb-3">
+<span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-secondary/20 text-secondary">Logistics ABC</span>
+<span class="text-[11px] text-text-muted">By Rasmus Leichter</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary group-hover:text-amber-bright transition-colors mb-3">
+              Cloud-Based Transport Management Software (TMS)
+            </h3>
+<p class="font-body-sm text-body-sm text-text-muted mb-4">
+              Traditional legacy TMS systems cost €100,000+ annually and require months of setup. Cloud alternatives start at €199/month and get you shipping in weeks.
+            </p>
+</div>
+<div class="px-6 pb-6 pt-2">
+<a class="font-label-sm text-label-sm text-amber-bright hover:underline inline-flex items-center gap-1" data-path="blog-cloud-tms" href="#">
+              Continue reading <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Post 3 -->
+<div class="rounded-2xl bg-surface-card overflow-hidden flex flex-col justify-between hover:bg-surface-card-elevated transition-all shadow-md group">
+<div class="p-6">
+<div class="flex items-center gap-2 mb-3">
+<span class="px-2.5 py-0.5 rounded text-[11px] font-semibold bg-status-spot-blue/20 text-status-spot-blue">Shipper's Guide</span>
+<span class="text-[11px] text-text-muted">By Rasmus Leichter</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary group-hover:text-amber-bright transition-colors mb-3">
+              Top 17 Transport Management Software (TMS) in 2026
+            </h3>
+<p class="font-body-sm text-body-sm text-text-muted mb-4">
+              Over 200 pages of research and customer review benchmarks synthesized into the ultimate TMS ranking for European manufacturers, wholesalers, and retailers.
+            </p>
+</div>
+<div class="px-6 pb-6 pt-2">
+<a class="font-label-sm text-label-sm text-amber-bright hover:underline inline-flex items-center gap-1" data-path="blog-top-tms" href="#">
+              Continue reading <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 8. HIGH-CONVERTING BOTTOM CTA & TRUST BADGES -->
+<section class="pb-24 pt-12">
+<div class="max-w-7xl mx-auto px-6 lg:px-12">
+<div class="rounded-3xl bg-gradient-to-b from-surface-card to-surface-card-elevated p-10 lg:p-16 text-center relative overflow-hidden shadow-2xl">
+<!-- Glow accent inside banner -->
+<div class="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="relative z-10 max-w-3xl mx-auto">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-amber-bright font-bold">Deploy In Days, Not Quarters</span>
+<h2 class="font-headline-xl text-headline-xl text-text-primary mt-3 mb-6 tracking-tight">
+            See how we can boost your everyday logistics
+          </h2>
+<p class="font-body-lg text-body-lg text-text-muted mb-10">
+            Join hundreds of industrial leaders who cut shipping admin time by 60% and gained total freight spend transparency.
+          </p>
+<div class="flex flex-wrap items-center justify-center gap-4 mb-14">
+<a class="px-8 py-4 rounded-lg bg-primary-container text-on-primary-container font-label-lg text-label-lg font-bold shadow-[0_0_24px_rgba(244,186,54,0.35)] hover:bg-amber-bright transition-all" data-path="signup" href="#">
+              Register account
+            </a>
+<a class="px-8 py-4 rounded-lg bg-surface-bright text-text-primary font-label-lg text-label-lg hover:bg-surface-container-highest transition-all shadow-sm" data-path="consultation" href="#">
+              Book a free consultation
+            </a>
+</div>
+<!-- Industry trust award badges -->
+<div class="pt-8 flex flex-wrap items-center justify-center gap-8 md:gap-12 text-text-muted">
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-amber-bright text-[24px]">workspace_premium</span>
+<span class="font-label-sm text-label-sm text-text-secondary mt-1">Capterra Best Value</span>
+<span class="text-[11px] text-text-muted">2023 Award</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-status-contract-green text-[24px]">verified</span>
+<span class="font-label-sm text-label-sm text-text-secondary mt-1">Capterra Ease of Use</span>
+<span class="text-[11px] text-text-muted">2025 Recognized</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-status-spot-blue text-[24px]">support_agent</span>
+<span class="font-label-sm text-label-sm text-text-secondary mt-1">SoftwareAdvice</span>
+<span class="text-[11px] text-text-muted">Best Customer Support</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="material-symbols-outlined text-primary-container text-[24px]">recommend</span>
+<span class="font-label-sm text-label-sm text-text-secondary mt-1">GetApp Top Rated</span>
+<span class="text-[11px] text-text-muted">4.9 / 5 Rating</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div></main><footer class="w-full bg-surface-container-lowest text-text-muted pt-16 pb-12 shadow-[0_-1px_12px_rgba(0,0,0,0.5)]"><div class="max-w-7xl mx-auto px-6 lg:px-12"><div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-16"><div class="col-span-2 lg:col-span-2 pr-4"><div class="flex items-center gap-1.5 mb-3"><span class="font-headline-sm text-headline-sm tracking-tight uppercase text-text-primary">CARGOSON</span><div class="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_8px_rgba(244,186,54,0.8)]"></div></div><p class="font-body-sm text-body-sm text-text-muted max-w-sm mb-6">Enterprise logistics and cloud transport management software connecting industrial shippers with 900+ carrier networks worldwide.</p><div class="flex flex-col gap-2 font-body-sm text-body-sm text-text-secondary"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary-container">location_on</span><span>Telliskivi 60a/5, 10412 Tallinn, Estonia</span></div><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary-container">mail</span><a class="hover:text-amber-bright transition-colors" href="mailto:info@cargoson.com">info@cargoson.com</a></div><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary-container">call</span><span>+372 600 2340</span></div></div></div><div class="flex flex-col gap-3"><span class="font-label-md text-label-md uppercase tracking-wider text-text-primary font-bold">Product</span><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="overview" href="#">TMS Overview</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="carrier-integrations" href="#">Carrier Integrations</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="erp-integrations" href="#">ERP Connectors</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="shipment-tracking" href="#">Freight Tracking</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="pricing" href="#">Pricing Plans</a></div><div class="flex flex-col gap-3"><span class="font-label-md text-label-md uppercase tracking-wider text-text-primary font-bold">Industries</span><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="industries-electronics" href="#">Electronics</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="industries-chemicals" href="#">Chemicals</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="industries-machinery" href="#">Machinery</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="industries-printing" href="#">Printing &amp; Paper</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="industries" href="#">All Verticals</a></div><div class="flex flex-col gap-3"><span class="font-label-md text-label-md uppercase tracking-wider text-text-primary font-bold">Tools</span><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="co2-calculator" href="#">CO2 Calculator</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="resources" href="#">Packaging Helper</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="resources" href="#">Freight Index</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="resources" href="#">API Documentation</a></div><div class="flex flex-col gap-3"><span class="font-label-md text-label-md uppercase tracking-wider text-text-primary font-bold">Company</span><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="about" href="#">About Cargoson</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="contact" href="#">Contact &amp; Support</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="consultation" href="#">Book a Demo</a><a class="font-body-sm text-body-sm text-text-muted hover:text-amber-bright transition-colors" data-path="legal" href="#">Security &amp; GDPR</a></div></div><div class="py-8 my-8 bg-surface-card rounded-xl px-6 flex flex-wrap items-center justify-between gap-6"><div class="flex items-center gap-3"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted">Rated Top Value by Global Logistics Leaders</span></div><div class="flex flex-wrap items-center gap-8"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded bg-status-contract-green/20 flex items-center justify-center"><span class="material-symbols-outlined text-[16px] text-status-contract-green">verified</span></div><div class="flex flex-col"><span class="font-label-md text-label-md text-text-primary">Capterra</span><span class="font-label-sm text-label-sm text-text-muted">4.9 / 5.0 Rating</span></div></div><div class="flex items-center gap-2"><div class="w-6 h-6 rounded bg-status-spot-blue/20 flex items-center justify-center"><span class="material-symbols-outlined text-[16px] text-status-spot-blue">star</span></div><div class="flex flex-col"><span class="font-label-md text-label-md text-text-primary">Software Advice</span><span class="font-label-sm text-label-sm text-text-muted">FrontRunner 2025</span></div></div><div class="flex items-center gap-2"><div class="w-6 h-6 rounded bg-primary-container/20 flex items-center justify-center"><span class="material-symbols-outlined text-[16px] text-primary-container">thumb_up</span></div><div class="flex flex-col"><span class="font-label-md text-label-md text-text-primary">GetApp</span><span class="font-label-sm text-label-sm text-text-muted">Category Leader</span></div></div></div></div><div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 text-text-muted font-body-sm text-body-sm"><div class="flex items-center gap-2"><span>© 2026 Cargoson.com. All rights reserved.</span></div><div class="flex items-center gap-6"><a class="hover:text-on-surface transition-colors" data-path="legal" href="#">Privacy Policy</a><a class="hover:text-on-surface transition-colors" data-path="legal" href="#">Terms of Service</a><a class="hover:text-on-surface transition-colors" data-path="legal" href="#">Cookie Settings</a></div></div></div></footer></body></html>

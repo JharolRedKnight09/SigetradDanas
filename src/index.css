@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --bg-surface-base: #0B0F17;
+    --bg-surface-card: #131B26;
+    --bg-surface-card-elevated: #1A2433;
+    --border-subtle: #1E293B;
+    --amber-bright: #FFC82C;
+    --amber-dim: #F4BA36;
+  }
+
   body {
-    @apply antialiased text-slate-800 bg-[#F4F6F9];
+    @apply antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -15,10 +25,93 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.4);
+    background: rgba(148, 163, 184, 0.25);
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 116, 139, 0.6);
+    background: rgba(244, 186, 54, 0.5);
   }
+}
+
+/* LIGHT MODE STYLING FOR CENTRAL PANEL & MODULES */
+.theme-light {
+  color-scheme: light;
+}
+
+.theme-light main,
+.theme-light .main-panel {
+  background-color: #F8FAFC !important;
+  color: #1E293B !important;
+}
+
+/* Central panel card surfaces */
+.theme-light main div[class*="bg-[#131B26]"],
+.theme-light main div[class*="bg-[#0D131C]"],
+.theme-light main div[class*="bg-slate-900"],
+.theme-light main section[class*="bg-[#131B26]"] {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+.theme-light main div[class*="bg-[#1A2433]"],
+.theme-light main div[class*="bg-slate-950"],
+.theme-light main div[class*="bg-slate-900/90"] {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+/* Light mode text contrast adjustments inside the central panel */
+.theme-light main .text-white:not(.keep-white) {
+  color: #0F172A !important;
+}
+
+.theme-light main .text-slate-300,
+.theme-light main .text-slate-400 {
+  color: #475569 !important;
+}
+
+.theme-light main .border-[#1E293B],
+.theme-light main .border-slate-800,
+.theme-light main .border-slate-800\/90 {
+  border-color: #E2E8F0 !important;
+}
+
+/* Tables in light mode */
+.theme-light main table {
+  background-color: #FFFFFF !important;
+}
+
+.theme-light main thead th {
+  background-color: #F1F5F9 !important;
+  color: #334155 !important;
+  border-color: #E2E8F0 !important;
+}
+
+.theme-light main tbody tr {
+  border-color: #F1F5F9 !important;
+}
+
+.theme-light main tbody tr:hover {
+  background-color: #F8FAFC !important;
+}
+
+.theme-light main tbody td {
+  color: #1E293B !important;
+}
+
+/* Forms and Inputs in light mode */
+.theme-light main input:not([type="checkbox"]):not([type="radio"]),
+.theme-light main select,
+.theme-light main textarea {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+.theme-light main input::placeholder,
+.theme-light main textarea::placeholder {
+  color: #94A3B8 !important;
 }

@@ -89,6 +89,11 @@ interface AppContextType {
   addUser: (userData: Omit<User, 'id'>) => { success: boolean; error?: string };
   updateUser: (id: string, userData: Partial<User>) => void;
   deleteUser: (id: string) => { success: boolean; error?: string };
+
+  // Tema Claro / Oscuro para el panel central
+  theme: 'dark' | 'light';
+  toggleTheme: () => void;
+  setTheme: (theme: 'dark' | 'light') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -130,8 +135,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    // Show the redesigned login screen immediately so the user can preview it directly
+    const seenNewLogin = localStorage.getItem('SIGETRAD_SEEN_NEW_LOGIN_V1');
+    if (!seenNewLogin) {
+      localStorage.setItem('SIGETRAD_SEEN_NEW_LOGIN_V1', 'true');
+      localStorage.removeItem(`${STORAGE_KEY}_is_auth`);
+      return false;
+    }
     return localStorage.getItem(`${STORAGE_KEY}_is_auth`) === 'true';
   });
+
+  // Tema Claro / Oscuro para el panel central
+  const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('SIGETRAD_THEME');
+    return saved === 'light' ? 'light' : 'dark';
+  });
+
+  const toggleTheme = () => {
+    setThemeState((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('SIGETRAD_THEME', next);
+      return next;
+    });
+  };
+
+  const setTheme = (newTheme: 'dark' | 'light') => {
+    setThemeState(newTheme);
+    localStorage.setItem('SIGETRAD_THEME', newTheme);
+  };
 
   const [propietarios] = useState<PropietarioHermano[]>(PROPIETARIOS_HERMANOS);
 
@@ -226,6 +257,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(`${STORAGE_KEY}_bitacora`, JSON.stringify(bitacora));
   }, [bitacora]);
 
+  // Sincronización con la API de MySQL en el servidor
+  useEffect(() => {
+    const sincronizarConServidor = async () => {
+      try {
+        const res = await fetch('/api/clientes');
+        if (res.ok) {
+          const clientesDb = await res.json();
+          if (Array.isArray(clientesDb) && clientesDb.length > 0) {
+            // Mapear los datos de MySQL al formato de Cliente
+            const clientesFormateados: Cliente[] = clientesDb.map((c: any) => ({
+              id: `cli-${c.id}`,
+              codigo: c.codigo,
+              nombre: c.nombre,
+              nit: c.nit,
+              direccion: c.direccion || '',
+              telefono: c.telefono || '',
+              correo: c.correo || c.email || '',
+              esAgenteRetenedor: Boolean(c.es_agente_retenedor ?? true),
+              buquesHabituales: Array.isArray(c.buquesHabituales) ? c.buquesHabituales : [],
+              contactoPrincipal: c.contacto_principal || c.contactoPrincipal || '',
+              activo: Boolean(c.activo ?? true)
+            }));
+            
+            // Unir sin duplicados con los iniciales
+            setClientes((prev) => {
+              const existentesCodigos = new Set(clientesFormateados.map(c => c.codigo));
+              const filtradosPrev = prev.filter(p => !existentesCodigos.has(p.codigo));
+              return [...clientesFormateados, ...filtradosPrev];
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('API local o servidor no disponible temporalmente:', err);
+      }
+    };
+
+    sincronizarConServidor();
+  }, []);
+
   const logAccion = (modulo: string, accion: string, detalle: string) => {
     const nuevaAccion: BitacoraAccion = {
       id: `bit-${Date.now()}`,
@@ -238,12 +308,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBitacora((prev) => [nuevaAccion, ...prev]);
   };
 
-  // Clientes CRUD
-  const addCliente = (clienteData: Omit<Cliente, 'id'>) => {
+  // Clientes CRUD con sincronización a MySQL
+  const addCliente = async (clienteData: Omit<Cliente, 'id'>) => {
     const newId = `cli-${Date.now()}`;
     const nuevo: Cliente = { ...clienteData, id: newId };
-    setClientes((prev) => [...prev, nuevo]);
+    setClientes((prev) => [nuevo, ...prev]);
     logAccion('Clientes', 'Creación de Cliente', `Se registró al cliente: ${nuevo.nombre} (${nuevo.codigo})`);
+
+    // Guardar en la Base de Datos del servidor
+    try {
+      await fetch('/api/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          codigo: nuevo.codigo,
+          nombre: nuevo.nombre,
+          nit: nuevo.nit,
+          direccion: nuevo.direccion,
+          telefono: nuevo.telefono,
+          correo: nuevo.correo,
+          es_agente_retenedor: nuevo.esAgenteRetenedor,
+          contacto_principal: nuevo.contactoPrincipal
+        })
+      });
+    } catch (e) {
+      console.error('Error al persistir cliente en MySQL:', e);
+    }
   };
 
   const updateCliente = (id: string, clienteData: Partial<Cliente>) => {
@@ -721,6 +811,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateParametroCombustible,
         logAccion,
         restaurarDatosDemo,
+        theme,
+        toggleTheme,
+        setTheme,
       }}
     >
       {children}

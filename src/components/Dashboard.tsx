@@ -22,6 +22,8 @@ import {
   TrendingUp,
   FileCheck2,
   CreditCard,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { exportViajesToExcel } from '../utils/excelExport';
 import { exportViajePDF } from '../utils/pdfExport';
@@ -40,6 +42,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     registrosCombustible,
     instruccionesCobro,
     propietarios,
+    theme,
+    toggleTheme,
   } = useApp();
 
   // Operational metrics
@@ -116,111 +120,132 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
             <span>Excel Maestro</span>
           </button>
+
+          {/* Theme switcher button in Dashboard */}
+          <button
+            onClick={toggleTheme}
+            className={`inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer shadow-xs ${
+              theme === 'dark'
+                ? 'bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border-amber-400/40'
+                : 'bg-white hover:bg-slate-100 text-slate-800 border-slate-300 shadow-sm'
+            }`}
+            title={theme === 'dark' ? 'Cambiar el panel a Modo Claro' : 'Cambiar el panel a Modo Oscuro'}
+          >
+            {theme === 'dark' ? (
+              <>
+                <Sun className="w-4 h-4 text-amber-400" />
+                <span>Modo Claro</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-4 h-4 text-indigo-500" />
+                <span>Modo Oscuro</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
       {/* KPI Financial & Operational Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Facturación Bruta */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-blue-600 space-y-3">
+        <div className="bg-[#131B26] hover:bg-[#1A2433] rounded-2xl p-5 border border-[#1E293B] shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all relative overflow-hidden border-t-2 border-t-[#F4BA36] space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Monto Facturado Bruto
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/80 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#F4BA36]/15 text-[#FFC82C] flex items-center justify-center border border-[#F4BA36]/30 shadow-xs">
               <Receipt className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+            <div className="text-2xl font-black text-white font-mono tracking-tight">
               Q {totalFacturadoBruto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-              <span className="font-semibold text-slate-700">{facturas.length} facturas emitidas</span>
+            <div className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+              <span className="font-semibold text-slate-300">{facturas.length} facturas emitidas</span>
             </div>
           </div>
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <span className="text-slate-500">Pendiente de cobro:</span>
-            <span className="font-bold text-amber-700 font-mono">
+          <div className="pt-2 border-t border-[#1E293B] flex items-center justify-between text-[11px]">
+            <span className="text-slate-400">Pendiente de cobro:</span>
+            <span className="font-bold text-[#FFC82C] font-mono">
               Q {saldoPendienteCobro.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
             </span>
           </div>
         </div>
 
         {/* KPI 2: Retenciones SAT de Ley */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-rose-600 space-y-3">
+        <div className="bg-[#131B26] hover:bg-[#1A2433] rounded-2xl p-5 border border-[#1E293B] shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all relative overflow-hidden border-t-2 border-t-[#EF4444] space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Retenciones SAT de Ley
             </span>
-            <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100/80 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#EF4444]/15 text-[#EF4444] flex items-center justify-center border border-[#EF4444]/30 shadow-xs">
               <FileCheck2 className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-rose-700 font-mono tracking-tight">
+            <div className="text-2xl font-black text-[#EF4444] font-mono tracking-tight">
               Q {totalRetenciones.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-              <span>ISR (5%): <strong className="text-slate-700">Q {totalRetencionesIsr.toLocaleString('es-GT', { minimumFractionDigits: 0 })}</strong></span>
+            <div className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+              <span>ISR (5%): <strong className="text-slate-200">Q {totalRetencionesIsr.toLocaleString('es-GT', { minimumFractionDigits: 0 })}</strong></span>
               <span>•</span>
-              <span>IVA (15%): <strong className="text-slate-700">Q {totalRetencionesIva.toLocaleString('es-GT', { minimumFractionDigits: 0 })}</strong></span>
+              <span>IVA (15%): <strong className="text-slate-200">Q {totalRetencionesIva.toLocaleString('es-GT', { minimumFractionDigits: 0 })}</strong></span>
             </div>
           </div>
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <span className="text-slate-500">Estado fiscal:</span>
-            <span className="font-bold text-emerald-700">Constancias Aplicadas</span>
+          <div className="pt-2 border-t border-[#1E293B] flex items-center justify-between text-[11px]">
+            <span className="text-slate-400">Estado fiscal:</span>
+            <span className="font-bold text-[#10B981]">Constancias Aplicadas</span>
           </div>
         </div>
 
         {/* KPI 3: Neto Conciliado a Cuentas */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-emerald-600 space-y-3">
+        <div className="bg-[#131B26] hover:bg-[#1A2433] rounded-2xl p-5 border border-[#1E293B] shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all relative overflow-hidden border-t-2 border-t-[#10B981] space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Liquidado en Cuentas Bancarias
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/80 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#10B981]/15 text-[#10B981] flex items-center justify-center border border-[#10B981]/30 shadow-xs">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-emerald-700 font-mono tracking-tight">
+            <div className="text-2xl font-black text-[#10B981] font-mono tracking-tight">
               Q {totalNetoDepositado.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-xs text-slate-400 mt-1">
               Repartido a los 3 Hermanos Dannas
             </div>
           </div>
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <span className="text-slate-500">Bancos destino:</span>
-            <span className="font-semibold text-slate-700 font-mono text-[10px]">Banrural • BI • G&T</span>
+          <div className="pt-2 border-t border-[#1E293B] flex items-center justify-between text-[11px]">
+            <span className="text-slate-400">Bancos destino:</span>
+            <span className="font-semibold text-slate-300 font-mono text-[10px]">Banrural • BI • G&T</span>
           </div>
         </div>
 
         {/* KPI 4: Flota en Operación */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow relative overflow-hidden border-t-4 border-t-indigo-600 space-y-3">
+        <div className="bg-[#131B26] hover:bg-[#1A2433] rounded-2xl p-5 border border-[#1E293B] shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all relative overflow-hidden border-t-2 border-t-[#0EA5E9] space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Flota en Operación
             </span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/80 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#0EA5E9]/15 text-[#0EA5E9] flex items-center justify-center border border-[#0EA5E9]/30 shadow-xs">
               <Truck className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
-              {viajesActivos.length} <span className="text-sm font-normal text-slate-500">en ruta</span>
+            <div className="text-2xl font-black text-white font-mono tracking-tight flex items-baseline gap-2">
+              <span>{viajesActivos.length}</span>
+              <span className="text-xs font-sans text-slate-400 font-normal">en ruta</span>
             </div>
-            <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-              <span className="font-semibold text-emerald-700">{viajesFinalizados.length} entregados</span>
-              <span>• Total: {totalViajes}</span>
+            <div className="text-xs text-slate-400 mt-1">
+              {viajesFinalizados.length} entregados • Total: {totalViajes}
             </div>
           </div>
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-            <span className="text-slate-500">Consumo diésel:</span>
-            <span className="font-bold text-slate-800 font-mono">
-              Q {totalGastoCombustible.toLocaleString('es-GT', { minimumFractionDigits: 0 })}
-            </span>
+          <div className="pt-2 border-t border-[#1E293B] flex items-center justify-between text-[11px]">
+            <span className="text-slate-400">Consumo diésel:</span>
+            <span className="font-bold text-slate-200 font-mono">Q {totalGastoCombustible.toLocaleString('es-GT', { minimumFractionDigits: 0 })}</span>
           </div>
         </div>
       </div>
@@ -230,20 +255,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         {/* Left 8 Cols: Movement Tabs + Recent Trips Table */}
         <div className="lg:col-span-8 space-y-6">
           {/* Movement Categories (Excel Tabs replication) */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className="bg-[#131B26] rounded-2xl border border-[#1E293B] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5)] space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E293B] pb-3">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-blue-600" />
+                <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-[#F4BA36]" />
                   Pestañas Operativas del Maestro (Categorías de Transporte)
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Mapeo exacto de las pestañas del Excel: Buques, Barrios, Carbón, Clinkers, Mi Guate, Palo Gordo.
                 </p>
               </div>
               <button
                 onClick={() => onNavigate('viajes')}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-[#FFC82C] hover:text-[#F4BA36] flex items-center gap-1 cursor-pointer transition-colors"
               >
                 <span>Ver Módulo Completo</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -263,19 +288,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <div
                   key={cat.name}
                   onClick={() => onNavigate('viajes')}
-                  className="p-3.5 rounded-xl border border-slate-200/90 bg-slate-50/70 hover:bg-white hover:border-blue-300 hover:shadow-md transition-all duration-150 cursor-pointer group"
+                  className="p-3.5 rounded-xl border border-[#1E293B] bg-[#1A2433] hover:bg-[#222F42] hover:border-[#F4BA36]/40 hover:shadow-[0_4px_16px_rgba(0,0,0,0.5)] transition-all duration-150 cursor-pointer group"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-900 group-hover:text-blue-600 transition-colors">
+                    <span className="font-bold text-xs text-white group-hover:text-[#FFC82C] transition-colors">
                       {cat.name}
                     </span>
-                    <span className="text-[9px] font-semibold text-slate-500 bg-white px-1.5 py-0.2 rounded border border-slate-200 shadow-2xs">
+                    <span className="text-[9px] font-semibold text-slate-400 bg-[#131B26] px-1.5 py-0.2 rounded border border-[#1E293B]">
                       {cat.tag}
                     </span>
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5 truncate">{cat.sub}</div>
-                  <div className="mt-2 text-base font-black text-slate-800 font-mono">
-                    {cat.count} <span className="text-[10px] font-normal text-slate-500 font-sans">viajes</span>
+                  <div className="mt-2 text-base font-black text-[#FFC82C] font-mono">
+                    {cat.count} <span className="text-[10px] font-normal text-slate-400 font-sans">viajes</span>
                   </div>
                 </div>
               ))}
@@ -283,20 +308,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
 
           {/* Recent Trips Table with Scales and PDF Export */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-[#131B26] rounded-2xl border border-[#1E293B] shadow-[0_4px_24px_rgba(0,0,0,0.5)] overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-[#1E293B] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-blue-600" />
+                <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Scale className="w-4 h-4 text-[#0EA5E9]" />
                   Últimos Despachos y Registro de Básculas Portuarias
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Control de pesaje en muelle (Carga) versus báscula en silos de cliente (Descarga).
                 </p>
               </div>
               <button
                 onClick={() => onNavigate('viajes')}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-[#FFC82C] hover:text-[#F4BA36] flex items-center gap-1 cursor-pointer transition-colors"
               >
                 <span>Ver todos</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -304,8 +329,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-700">
-                <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="bg-[#0B0F17] text-slate-400 font-semibold border-b border-[#1E293B]">
                   <tr>
                     <th className="px-4 py-3">Código</th>
                     <th className="px-4 py-3">Buque y Categoría</th>
@@ -317,31 +342,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                     <th className="px-4 py-3 text-right">Comprobante</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#1E293B]">
                   {viajes.slice(0, 5).map((viaje) => (
-                    <tr key={viaje.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-4 py-3 font-mono font-bold text-blue-700">
+                    <tr key={viaje.id} className="hover:bg-[#1A2433] transition-colors">
+                      <td className="px-4 py-3 font-mono font-bold text-[#FFC82C]">
                         {viaje.codigoViaje}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-bold text-slate-900">{viaje.buqueNombre}</div>
+                        <div className="font-bold text-white">{viaje.buqueNombre}</div>
                         <div className="text-[10px] text-slate-400">{viaje.categoriaMovimiento}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[11px] font-semibold">
+                        <span className="inline-block px-2 py-0.5 rounded bg-[#1A2433] text-slate-200 text-[11px] font-semibold border border-[#1E293B]">
                           {viaje.material}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-bold text-slate-900 font-mono">{viaje.placa}</div>
-                        <div className="text-[11px] text-slate-500 truncate max-w-[120px]">
+                        <div className="font-bold text-white font-mono">{viaje.placa}</div>
+                        <div className="text-[11px] text-slate-400 truncate max-w-[120px]">
                           {viaje.pilotoNombre}
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         {viaje.pesajeCarga ? (
                           <div>
-                            <span className="font-bold text-slate-900 font-mono">
+                            <span className="font-bold text-white font-mono">
                               {viaje.pesajeCarga.pesoNetoTon} MT
                             </span>
                             <div className="text-[10px] text-slate-400 font-mono">
@@ -349,13 +374,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                             </div>
                           </div>
                         ) : (
-                          <span className="text-amber-700 font-semibold italic text-[11px]">Pendiente</span>
+                          <span className="text-[#FFC82C] font-semibold italic text-[11px]">Pendiente</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         {viaje.pesajeDescarga ? (
                           <div>
-                            <span className="font-bold text-emerald-700 font-mono">
+                            <span className="font-bold text-[#10B981] font-mono">
                               {viaje.pesajeDescarga.pesoNetoTon} MT
                             </span>
                             <div className="text-[10px] text-slate-400 font-mono">
@@ -363,17 +388,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                             </div>
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic text-[11px]">En ruta</span>
+                          <span className="text-slate-500 italic text-[11px]">En ruta</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
                             viaje.estado === 'Finalizado' || viaje.estado === 'Facturado'
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              ? 'bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30'
                               : viaje.estado === 'En Curso'
-                              ? 'bg-blue-50 text-blue-800 border-blue-200'
-                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                              ? 'bg-[#0EA5E9]/15 text-[#0EA5E9] border-[#0EA5E9]/30'
+                              : 'bg-[#FFC82C]/15 text-[#FFC82C] border-[#FFC82C]/30'
                           }`}
                         >
                           {viaje.estado}
@@ -382,10 +407,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => exportViajePDF(viaje)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors border border-slate-200 cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-slate-200 bg-[#1A2433] hover:bg-[#222F42] hover:text-[#FFC82C] transition-colors border border-[#1E293B] cursor-pointer"
                           title="Descargar Comprobante Oficial PDF"
                         >
-                          <Download className="w-3 h-3 text-slate-600" />
+                          <Download className="w-3 h-3 text-[#FFC82C]" />
                           <span>PDF</span>
                         </button>
                       </td>
@@ -400,13 +425,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         {/* Right 4 Cols: 3 Brothers Accounts & WhatsApp Instructions */}
         <div className="lg:col-span-4 space-y-6">
           {/* 3 Brothers Accounts Distribution */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-emerald-600" />
+          <div className="bg-[#131B26] rounded-2xl border border-[#1E293B] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.5)] space-y-4">
+            <div className="border-b border-[#1E293B] pb-3">
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-[#10B981]" />
                 Cuentas de los 3 Hermanos Dannas
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 Dispersión y asignación de fondos según la placa de cada camión.
               </p>
             </div>
@@ -420,20 +445,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 return (
                   <div
                     key={hermano.id}
-                    className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2 hover:bg-white hover:border-slate-300 transition-colors"
+                    className="p-3.5 rounded-xl bg-[#1A2433] border border-[#1E293B] space-y-2 hover:bg-[#222F42] transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900">{hermano.nombre}</span>
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200 shadow-2xs">
+                      <span className="text-xs font-bold text-white">{hermano.nombre}</span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#131B26] text-slate-300 border border-[#1E293B]">
                         {hermano.banco}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-500 font-mono">
+                    <div className="text-[11px] text-slate-400 font-mono">
                       No. Cuenta: {hermano.numeroCuenta}
                     </div>
-                    <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 text-xs">
-                      <span className="text-slate-500">Total Liquidado:</span>
-                      <span className="font-bold text-emerald-700 font-mono">
+                    <div className="flex items-center justify-between pt-1.5 border-t border-[#1E293B] text-xs">
+                      <span className="text-slate-400">Total Liquidado:</span>
+                      <span className="font-bold text-[#10B981] font-mono">
                         Q {totalDepositado.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
@@ -442,8 +467,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               })}
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 text-[11px] text-slate-600 space-y-1">
-              <span className="font-bold text-slate-800 block">Normativa SAT de Retenciones:</span>
+            <div className="p-3 rounded-xl bg-[#1A2433] border border-[#1E293B] text-[11px] text-slate-400 space-y-1">
+              <span className="font-bold text-[#FFC82C] block">Normativa SAT de Retenciones:</span>
               <p>
                 Los clientes catalogados como Agente Retenedor retienen el 5% de ISR y el 15% de IVA sobre el total de la factura antes del depósito.
               </p>
