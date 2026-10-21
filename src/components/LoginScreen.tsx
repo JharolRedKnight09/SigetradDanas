@@ -17,8 +17,8 @@ import {
 
 export const LoginScreen: React.FC = () => {
   const { login, sessionNotice, clearSessionNotice } = useApp();
-  const [identifier, setIdentifier] = useState('jairo.dannas');
-  const [password, setPassword] = useState('admin');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -239,7 +239,7 @@ export const LoginScreen: React.FC = () => {
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="Ej: jairo.dannas"
+                  placeholder="Ingrese su usuario"
                   className="w-full pl-13 pr-4 py-3.5 sm:py-4 rounded-full bg-[#1D4ED8] hover:bg-[#1E40AF] text-white placeholder-blue-200 font-semibold text-sm focus:outline-none focus:ring-4 focus:ring-blue-400/40 shadow-md shadow-blue-600/20 transition-all"
                 />
               </div>
