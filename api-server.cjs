@@ -192,6 +192,72 @@ async function initDatabase() {
       );
     `);
 
+    // Migración segura de columnas si la tabla ya existía previamente con menos columnas
+    const safeAddColumn = async (table, col, typeDef) => {
+      try {
+        await pool.query(`ALTER TABLE ${table} ADD COLUMN ${col} ${typeDef}`);
+      } catch (e) {
+        // Ignorar si la columna ya existe en la tabla
+      }
+    };
+    await safeAddColumn('clientes', 'codigo', 'VARCHAR(30)');
+    await safeAddColumn('clientes', 'nombre', 'VARCHAR(150)');
+    await safeAddColumn('clientes', 'nit', 'VARCHAR(30)');
+    await safeAddColumn('clientes', 'direccion', "VARCHAR(255) DEFAULT ''");
+    await safeAddColumn('clientes', 'telefono', "VARCHAR(50) DEFAULT ''");
+    await safeAddColumn('clientes', 'correo', "VARCHAR(100) DEFAULT ''");
+    await safeAddColumn('clientes', 'es_agente_retenedor', 'BOOLEAN DEFAULT TRUE');
+    await safeAddColumn('clientes', 'buques_habituales', 'TEXT');
+    await safeAddColumn('clientes', 'contacto_principal', "VARCHAR(150) DEFAULT ''");
+    await safeAddColumn('clientes', 'activo', 'BOOLEAN DEFAULT TRUE');
+
+    await safeAddColumn('pilotos', 'dpi', 'VARCHAR(30)');
+    await safeAddColumn('pilotos', 'licencia', 'VARCHAR(30)');
+    await safeAddColumn('pilotos', 'telefono', "VARCHAR(50) DEFAULT ''");
+    await safeAddColumn('pilotos', 'tipo_licencia', "VARCHAR(10) DEFAULT 'A'");
+    await safeAddColumn('pilotos', 'vencimiento_licencia', 'DATE');
+    await safeAddColumn('pilotos', 'estado', "VARCHAR(30) DEFAULT 'Disponible'");
+    await safeAddColumn('pilotos', 'tarifa_viaje', 'DECIMAL(10,2) DEFAULT 350.00');
+    await safeAddColumn('pilotos', 'gondola_habitual', "VARCHAR(20) DEFAULT ''");
+    await safeAddColumn('pilotos', 'activo', 'BOOLEAN DEFAULT TRUE');
+
+    await safeAddColumn('gondolas', 'propietario', "VARCHAR(50) DEFAULT 'Jairo Dannas'");
+    await safeAddColumn('gondolas', 'tipo', "VARCHAR(50) DEFAULT 'Triaxial Volteo'");
+    await safeAddColumn('gondolas', 'capacidad_toneladas', 'DECIMAL(8,2) DEFAULT 38.00');
+    await safeAddColumn('gondolas', 'capacidad_m3', 'DECIMAL(8,2) DEFAULT 28.00');
+    await safeAddColumn('gondolas', 'estado', "VARCHAR(30) DEFAULT 'Disponible'");
+    await safeAddColumn('gondolas', 'kilometraje_actual', 'INT DEFAULT 120000');
+    await safeAddColumn('gondolas', 'anio', 'INT DEFAULT 2022');
+    await safeAddColumn('gondolas', 'observaciones', 'TEXT');
+    await safeAddColumn('gondolas', 'activo', 'BOOLEAN DEFAULT TRUE');
+
+    await safeAddColumn('viajes', 'categoria_movimiento', "VARCHAR(80) DEFAULT 'Buques'");
+    await safeAddColumn('viajes', 'material', "VARCHAR(80) DEFAULT 'Carbón'");
+    await safeAddColumn('viajes', 'buque_nombre', "VARCHAR(80) DEFAULT ''");
+    await safeAddColumn('viajes', 'propietario_hermano_id', "VARCHAR(50) DEFAULT 'herm-1'");
+    await safeAddColumn('viajes', 'tarifa_acordada', 'DECIMAL(10,2) DEFAULT 0.00');
+    await safeAddColumn('viajes', 'factura_id', 'VARCHAR(50)');
+    await safeAddColumn('viajes', 'peso_bruto_puerto', 'DECIMAL(10,2) DEFAULT 0.00');
+    await safeAddColumn('viajes', 'tara_puerto', 'DECIMAL(10,2) DEFAULT 0.00');
+    await safeAddColumn('viajes', 'peso_neto_puerto', 'DECIMAL(10,2) DEFAULT 0.00');
+    await safeAddColumn('viajes', 'ticket_puerto', 'VARCHAR(50)');
+    await safeAddColumn('viajes', 'peso_bruto_destino', 'DECIMAL(10,2) DEFAULT 0.00');
+    await safeAddColumn('viajes', 'tara_destino', 'DECIMAL(10,2) DEFAULT 0.00');
+    await safeAddColumn('viajes', 'peso_neto_destino', 'DECIMAL(10,2) DEFAULT 0.00');
+    await safeAddColumn('viajes', 'ticket_destino', 'VARCHAR(50)');
+
+    await safeAddColumn('facturas', 'es_agente_retenedor', 'BOOLEAN DEFAULT TRUE');
+    await safeAddColumn('facturas', 'retencion_isr_estimada', 'DECIMAL(12,2) DEFAULT 0.00');
+    await safeAddColumn('facturas', 'retencion_iva_estimada', 'DECIMAL(12,2) DEFAULT 0.00');
+    await safeAddColumn('facturas', 'neto_esperado', 'DECIMAL(12,2) DEFAULT 0.00');
+    await safeAddColumn('facturas', 'estado_pago', "VARCHAR(30) DEFAULT 'Emitida'");
+
+    try {
+      await pool.query('ALTER TABLE clientes ADD UNIQUE KEY uq_cliente_codigo (codigo)');
+    } catch (e) {
+      // Ignorar si el índice único ya existe
+    }
+
     // Sembrar usuario inicial jairo.dannas si la tabla está vacía
     const [userCount] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
     if (userCount && userCount[0].count === 0) {
@@ -246,33 +312,6 @@ async function initDatabase() {
         ('C-337BJS', 'Edwin Dannas', 'Cabezal Volvo VNL + Góndola 3 Ejes', 37.00, 'Mantenimiento', 275000)
       `);
       console.log('[MySQL] Góndolas base inicializadas en base de datos.');
-    }
-
-    // Migración segura de columnas si la tabla ya existía previamente con menos columnas
-    const safeAddColumn = async (table, col, typeDef) => {
-      try {
-        await pool.query(`ALTER TABLE ${table} ADD COLUMN ${col} ${typeDef}`);
-      } catch (e) {
-        // Ignorar si la columna ya existe en la tabla
-      }
-    };
-    await safeAddColumn('clientes', 'codigo', 'VARCHAR(30)');
-    await safeAddColumn('clientes', 'nombre', 'VARCHAR(150)');
-    await safeAddColumn('clientes', 'nit', 'VARCHAR(30)');
-    await safeAddColumn('clientes', 'direccion', "VARCHAR(255) DEFAULT ''");
-    await safeAddColumn('clientes', 'telefono', "VARCHAR(50) DEFAULT ''");
-    await safeAddColumn('clientes', 'correo', "VARCHAR(100) DEFAULT ''");
-    await safeAddColumn('clientes', 'es_agente_retenedor', 'BOOLEAN DEFAULT TRUE');
-    await safeAddColumn('clientes', 'buques_habituales', 'TEXT');
-    await safeAddColumn('clientes', 'contacto_principal', "VARCHAR(150) DEFAULT ''");
-    await safeAddColumn('clientes', 'activo', 'BOOLEAN DEFAULT TRUE');
-    await safeAddColumn('pilotos', 'activo', 'BOOLEAN DEFAULT TRUE');
-    await safeAddColumn('gondolas', 'activo', 'BOOLEAN DEFAULT TRUE');
-
-    try {
-      await pool.query('ALTER TABLE clientes ADD UNIQUE KEY uq_cliente_codigo (codigo)');
-    } catch (e) {
-      // Ignorar si el índice único ya existe
     }
 
     console.log('[MySQL] Tablas verificadas e inicializadas en sigetrad_db.');
@@ -429,33 +468,45 @@ app.post('/api/viajes', async (req, res) => {
     const v = req.body;
     const [result] = await pool.query(
       `INSERT INTO viajes (codigo_viaje, cliente_id, cliente_nombre, buque_nombre, categoria_movimiento, material, gondola_id, placa, piloto_id, piloto_nombre, origen, destino, fecha_salida, fecha_llegada, estado, peso_bruto_puerto, tara_puerto, peso_neto_puerto, ticket_puerto, peso_bruto_destino, tara_destino, peso_neto_destino, ticket_destino, tarifa_acordada, factura_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         estado = VALUES(estado),
+         peso_bruto_puerto = VALUES(peso_bruto_puerto),
+         tara_puerto = VALUES(tara_puerto),
+         peso_neto_puerto = VALUES(peso_neto_puerto),
+         ticket_puerto = VALUES(ticket_puerto),
+         peso_bruto_destino = VALUES(peso_bruto_destino),
+         tara_destino = VALUES(tara_destino),
+         peso_neto_destino = VALUES(peso_neto_destino),
+         ticket_destino = VALUES(ticket_destino),
+         fecha_llegada = VALUES(fecha_llegada),
+         factura_id = VALUES(factura_id)`,
       [
-        v.codigoViaje,
-        v.clienteId,
-        v.clienteNombre,
-        v.buqueNombre,
-        v.categoriaMovimiento,
-        v.material,
-        v.gondolaId,
-        v.placa,
-        v.pilotoId,
-        v.pilotoNombre,
-        v.origen,
-        v.destino,
-        v.fechaSalida,
-        v.fechaLlegada || null,
+        v.codigoViaje || v.codigo_viaje || `VJ-${Date.now()}`,
+        v.clienteId || v.cliente_id || '',
+        v.clienteNombre || v.cliente_nombre || '',
+        v.buqueNombre || v.buque_nombre || '',
+        v.categoriaMovimiento || v.categoria_movimiento || 'Buques',
+        v.material || 'Carbón',
+        v.gondolaId || v.gondola_id || '',
+        v.placa || '',
+        v.pilotoId || v.piloto_id || '',
+        v.pilotoNombre || v.piloto_nombre || '',
+        v.origen || 'Puerto Quetzal',
+        v.destino || 'Planta Central',
+        v.fechaSalida || v.fecha_salida || new Date().toISOString().slice(0, 10),
+        v.fechaLlegada || v.fecha_llegada || null,
         v.estado || 'En Curso',
-        v.pesajeCarga?.pesoBrutoTon || 0,
-        v.pesajeCarga?.taraTon || 0,
-        v.pesajeCarga?.pesoNetoTon || 0,
-        v.pesajeCarga?.ticketNumero || '',
-        v.pesajeDescarga?.pesoBrutoTon || 0,
-        v.pesajeDescarga?.taraTon || 0,
-        v.pesajeDescarga?.pesoNetoTon || 0,
-        v.pesajeDescarga?.ticketNumero || '',
-        v.tarifaAcordada || 0,
-        v.facturaId || null
+        v.pesajeCarga?.pesoBrutoTon || v.peso_bruto_puerto || 0,
+        v.pesajeCarga?.taraTon || v.tara_puerto || 0,
+        v.pesajeCarga?.pesoNetoTon || v.peso_neto_puerto || 0,
+        v.pesajeCarga?.ticketNumero || v.ticket_puerto || '',
+        v.pesajeDescarga?.pesoBrutoTon || v.peso_bruto_destino || 0,
+        v.pesajeDescarga?.taraTon || v.tara_destino || 0,
+        v.pesajeDescarga?.pesoNetoTon || v.peso_neto_destino || 0,
+        v.pesajeDescarga?.ticketNumero || v.ticket_destino || '',
+        v.tarifaAcordada || v.tarifa_acordada || 0,
+        v.facturaId || v.factura_id || null
       ]
     );
     res.status(201).json({ id: result.insertId, message: 'Viaje registrado exitosamente en MySQL' });
@@ -519,8 +570,27 @@ app.post('/api/pilotos', async (req, res) => {
     const p = req.body;
     const [result] = await pool.query(
       `INSERT INTO pilotos (nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [p.nombreCompleto, p.dpi, p.licencia, p.telefono, p.tipoLicencia || 'A', p.vencimientoLicencia, p.estado || 'Disponible', p.tarifaViaje || 350.00, p.gondolaHabitual || '']
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         nombre_completo = VALUES(nombre_completo),
+         licencia = VALUES(licencia),
+         telefono = VALUES(telefono),
+         tipo_licencia = VALUES(tipo_licencia),
+         vencimiento_licencia = VALUES(vencimiento_licencia),
+         estado = VALUES(estado),
+         tarifa_viaje = VALUES(tarifa_viaje),
+         gondola_habitual = VALUES(gondola_habitual)`,
+      [
+        p.nombreCompleto || p.nombre_completo || 'Piloto',
+        p.dpi || `DPI-${Date.now()}`,
+        p.licencia || 'A',
+        p.telefono || '',
+        p.tipoLicencia || p.tipo_licencia || 'A',
+        p.vencimientoLicencia || p.vencimiento_licencia || '2028-12-31',
+        p.estado || 'Disponible',
+        p.tarifaViaje || p.tarifa_viaje || 350.00,
+        p.gondolaHabitual || p.gondola_habitual || ''
+      ]
     );
     res.status(201).json({ id: result.insertId, message: 'Piloto guardado en MySQL' });
   } catch (err) {
@@ -543,8 +613,21 @@ app.post('/api/gondolas', async (req, res) => {
     const g = req.body;
     const [result] = await pool.query(
       `INSERT INTO gondolas (placa, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [g.placa, g.propietario, g.tipo || 'Triaxial Volteo', g.capacidadToneladas || 38.00, g.estado || 'Disponible', g.kilometrajeActual || 120000]
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         propietario = VALUES(propietario),
+         tipo = VALUES(tipo),
+         capacidad_toneladas = VALUES(capacidad_toneladas),
+         estado = VALUES(estado),
+         kilometraje_actual = VALUES(kilometraje_actual)`,
+      [
+        g.placa,
+        g.propietario || g.propietarioId || 'Jairo Dannas',
+        g.tipo || g.tipoUnidad || 'Triaxial Volteo',
+        g.capacidadToneladas || g.capacidadTon || 38.00,
+        g.estado || 'Disponible',
+        g.kilometrajeActual || g.kilometraje || 120000
+      ]
     );
     res.status(201).json({ id: result.insertId, message: 'Góndola guardada en MySQL' });
   } catch (err) {
