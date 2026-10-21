@@ -9,6 +9,7 @@
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -211,6 +212,14 @@ async function initDatabase() {
     await safeAddColumn('clientes', 'contacto_principal', "VARCHAR(150) DEFAULT ''");
     await safeAddColumn('clientes', 'activo', 'BOOLEAN DEFAULT TRUE');
 
+    await safeAddColumn('pilotos', 'nombre_completo', "VARCHAR(150) NOT NULL DEFAULT 'Piloto'");
+    await safeAddColumn('pilotos', 'nombre', "VARCHAR(150) NOT NULL DEFAULT 'Piloto'");
+    try {
+      await pool.query("UPDATE pilotos SET nombre_completo = nombre WHERE (nombre_completo IS NULL OR nombre_completo = '' OR nombre_completo = 'Piloto') AND (nombre IS NOT NULL AND nombre != '')");
+    } catch (e) {}
+    try {
+      await pool.query("UPDATE pilotos SET nombre = nombre_completo WHERE (nombre IS NULL OR nombre = '' OR nombre = 'Piloto') AND (nombre_completo IS NOT NULL AND nombre_completo != '')");
+    } catch (e) {}
     await safeAddColumn('pilotos', 'dpi', 'VARCHAR(30)');
     await safeAddColumn('pilotos', 'licencia', 'VARCHAR(30)');
     await safeAddColumn('pilotos', 'telefono', "VARCHAR(50) DEFAULT ''");
@@ -880,6 +889,17 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Servir archivos estáticos del frontend compilado (dist)
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Fallback SPA para rutas del cliente
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Arrancar servidor
