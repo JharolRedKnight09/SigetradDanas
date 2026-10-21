@@ -178,7 +178,7 @@ async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS usuarios (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id_str VARCHAR(50) UNIQUE,
+        user_id_str VARCHAR(50),
         username VARCHAR(80) UNIQUE NOT NULL,
         nombre VARCHAR(150) NOT NULL,
         email VARCHAR(120) NOT NULL,
@@ -909,3 +909,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[SIGETRAD Backend] Base de Datos destino: ${dbConfig.database}@${dbConfig.host}`);
   console.log(`=======================================================`);
 });
+
