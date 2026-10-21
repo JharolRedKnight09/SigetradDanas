@@ -84,6 +84,15 @@ interface AppContextType {
   switchUserRole: (rol: UserRole) => void;
   auditoriaLogs: BitacoraAccion[];
 
+  // Estado de Sincronización MySQL en Vivo
+  syncStatus: {
+    isOnline: boolean;
+    lastSync: Date | null;
+    isSyncing: boolean;
+    error: string | null;
+  };
+  sincronizarAhora: () => Promise<void>;
+
   // Autenticación y Gestión de Usuarios
   isAuthenticated: boolean;
   login: (identifier: string, pass: string) => { success: boolean; error?: string };
@@ -292,10 +301,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [isAuthenticated]);
 
-  // Sincronización con la API de MySQL en el servidor (Multi-tabla en tiempo real para todos los dispositivos)
-  useEffect(() => {
-    const sincronizarConServidor = async () => {
-      try {
+  // Estado de Sincronización MySQL en tiempo real
+  const [syncStatus, setSyncStatus] = useState<{
+    isOnline: boolean;
+    lastSync: Date | null;
+    isSyncing: boolean;
+    error: string | null;
+  }>({
+    isOnline: true,
+    lastSync: null,
+    isSyncing: false,
+    error: null,
+  });
+
+  // Función principal de sincronización bidireccional con MySQL
+  const sincronizarConServidor = async () => {
+    try {
+      setSyncStatus((prev) => ({ ...prev, isSyncing: true }));
         // 0. Sincronizar Usuarios desde MySQL
         const resUsuarios = await fetch('/api/usuarios');
         if (resUsuarios.ok) {
@@ -338,7 +360,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const resClientes = await fetch('/api/clientes');
         if (resClientes.ok) {
           const clientesDb = await resClientes.json();
-          if (Array.isArray(clientesDb) && clientesDb.length > 0) {
+          if (Array.isArray(clientesDb)) {
             const clientesFormateados: Cliente[] = clientesDb.map((c: any) => ({
               id: `cli-${c.id}`,
               codigo: c.codigo,
@@ -348,16 +370,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               telefono: c.telefono || '',
               correo: c.correo || c.email || '',
               esAgenteRetenedor: Boolean(c.es_agente_retenedor ?? true),
-              buquesHabituales: typeof c.buques_habituales === 'string' ? c.buques_habituales.split(',').map((s: string) => s.trim()) : (c.buquesHabituales || []),
+              buquesHabituales: typeof c.buques_habituales === 'string' 
+                ? c.buques_habituales.split(',').map((s: string) => s.trim()).filter(Boolean) 
+                : (c.buquesHabituales || []),
               contactoPrincipal: c.contacto_principal || c.contactoPrincipal || '',
               activo: Boolean(c.activo ?? true)
             }));
             
-            setClientes((prev) => {
-              const existentesCodigos = new Set(clientesFormateados.map(c => c.codigo));
-              const filtradosPrev = prev.filter(p => !existentesCodigos.has(p.codigo));
-              return [...clientesFormateados, ...filtradosPrev];
+            // Detectar clientes huérfanos que están en la memoria/localStorage de este navegador (ej. CLI-007) y subirlos a MySQL
+            let localesGuardados: Cliente[] = [];
+            try {
+              const rawLocal = localStorage.getItem(`${STORAGE_KEY}_clientes`);
+              if (rawLocal) localesGuardados = JSON.parse(rawLocal);
+            } catch (e) {
+              // fallback
+            }
+
+            const codigosEnDb = new Set(clientesFormateados.map((c) => (c.codigo || '').toUpperCase()));
+            const pendientesDeSubir = localesGuardados.filter(
+              (c) => c && c.codigo && !codigosEnDb.has(c.codigo.toUpperCase())
+            );
+
+            // Subir secuencialmente a MySQL para garantizar su persistencia remota
+            for (const p of pendientesDeSubir) {
+              try {
+                console.log(`[Auto-Sync] Subiendo cliente local ${p.codigo} (${p.nombre}) a MySQL...`);
+                await fetch('/api/clientes', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    codigo: p.codigo,
+                    nombre: p.nombre,
+                    nit: p.nit || 'CF',
+                    direccion: p.direccion || '',
+                    telefono: p.telefono || '',
+                    correo: p.correo || '',
+                    es_agente_retenedor: p.esAgenteRetenedor ?? true,
+                    buques_habituales: Array.isArray(p.buquesHabituales) ? p.buquesHabituales.join(', ') : (p.buquesHabituales || ''),
+                    contacto_principal: p.contactoPrincipal || ''
+                  })
+                });
+              } catch (subErr) {
+                console.warn(`[Auto-Sync] Error subiendo cliente pendiente ${p.codigo}:`, subErr);
+              }
+            }
+
+            // Deduplicación estricta por código (garantiza exactamente 1 tarjeta por cliente)
+            const mapaClientes = new Map<string, Cliente>();
+            clientesFormateados.forEach((c) => {
+              if (c.codigo) mapaClientes.set(c.codigo.toUpperCase(), c);
             });
+            pendientesDeSubir.forEach((p) => {
+              if (p.codigo && !mapaClientes.has(p.codigo.toUpperCase())) {
+                mapaClientes.set(p.codigo.toUpperCase(), p);
+              }
+            });
+            const listaClientesUnica = Array.from(mapaClientes.values());
+
+            setClientes(listaClientesUnica);
+            localStorage.setItem(`${STORAGE_KEY}_clientes`, JSON.stringify(listaClientesUnica));
           }
         }
 
@@ -406,11 +477,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               facturaId: v.factura_id || undefined,
             }));
 
-            setViajes((prev) => {
-              const codigosExistentes = new Set(viajesFormateados.map((v) => v.codigoViaje));
-              const filtrados = prev.filter((p) => !codigosExistentes.has(p.codigoViaje));
-              return [...viajesFormateados, ...filtrados];
+            const mapaViajes = new Map<string, Viaje>();
+            viajesFormateados.forEach((v) => {
+              if (v.codigoViaje) mapaViajes.set(v.codigoViaje, v);
             });
+            const listaViajesUnica = Array.from(mapaViajes.values());
+            setViajes(listaViajesUnica);
+            localStorage.setItem(`${STORAGE_KEY}_viajes`, JSON.stringify(listaViajesUnica));
           }
         }
 
@@ -431,11 +504,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               fechaIngreso: p.fecha_ingreso || '2024-01-15',
               gondolaHabitual: p.gondola_habitual || p.gondolaHabitual || '',
             }));
-            setPilotos((prev) => {
-              const dpisExistentes = new Set(pilotosFormateados.map((p) => p.dpi));
-              const filtrados = prev.filter((p) => !dpisExistentes.has(p.dpi));
-              return [...pilotosFormateados, ...filtrados];
+            const mapaPilotos = new Map<string, Piloto>();
+            pilotosFormateados.forEach((p) => {
+              if (p.dpi) mapaPilotos.set(p.dpi, p);
             });
+            const listaPilotosUnica = Array.from(mapaPilotos.values());
+            setPilotos(listaPilotosUnica);
+            localStorage.setItem(`${STORAGE_KEY}_pilotos`, JSON.stringify(listaPilotosUnica));
           }
         }
 
@@ -456,35 +531,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               anio: Number(g.anio || 2022),
               observaciones: g.observaciones || undefined,
             }));
-            setGondolas((prev) => {
-              const placasExistentes = new Set(gondolasFormateadas.map((g) => g.placa));
-              const filtrados = prev.filter((g) => !placasExistentes.has(g.placa));
-              return [...gondolasFormateadas, ...filtrados];
+            const mapaGondolas = new Map<string, Gondola>();
+            gondolasFormateadas.forEach((g) => {
+              if (g.placa) mapaGondolas.set(g.placa, g);
             });
+            const listaGondolasUnica = Array.from(mapaGondolas.values());
+            setGondolas(listaGondolasUnica);
+            localStorage.setItem(`${STORAGE_KEY}_gondolas`, JSON.stringify(listaGondolasUnica));
           }
         }
-      } catch (err) {
+
+        setSyncStatus({
+          isOnline: true,
+          lastSync: new Date(),
+          isSyncing: false,
+          error: null,
+        });
+      } catch (err: any) {
         console.warn('API local o servidor no disponible temporalmente:', err);
+        setSyncStatus((prev) => ({
+          ...prev,
+          isOnline: false,
+          isSyncing: false,
+          error: err?.message || 'Error de conexión con el backend',
+        }));
       }
     };
 
     // Ejecutar sincronización al cargar
-    sincronizarConServidor();
+    useEffect(() => {
+      sincronizarConServidor();
 
-    // Sincronización continua cada 8 segundos para reflejar cambios en celular y otros navegadores
-    const syncInterval = setInterval(sincronizarConServidor, 8000);
+      // Sincronización continua cada 4 segundos para reflejar cambios casi instantáneos en celular y otros navegadores
+      const syncInterval = setInterval(sincronizarConServidor, 4000);
 
-    // Sincronización inmediata al volver a la pestaña/ventana
-    const handleFocus = () => sincronizarConServidor();
-    window.addEventListener('focus', handleFocus);
-    window.addEventListener('visibilitychange', handleFocus);
+      // Sincronización inmediata al volver a la pestaña/ventana
+      const handleFocus = () => sincronizarConServidor();
+      window.addEventListener('focus', handleFocus);
+      window.addEventListener('visibilitychange', handleFocus);
 
-    return () => {
-      clearInterval(syncInterval);
-      window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('visibilitychange', handleFocus);
-    };
-  }, []);
+      return () => {
+        clearInterval(syncInterval);
+        window.removeEventListener('focus', handleFocus);
+        window.removeEventListener('visibilitychange', handleFocus);
+      };
+    }, []);
 
   const logAccion = (modulo: string, accion: string, detalle: string) => {
     const nuevaAccion: BitacoraAccion = {
@@ -502,35 +593,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addCliente = async (clienteData: Omit<Cliente, 'id'>) => {
     const newId = `cli-${Date.now()}`;
     const nuevo: Cliente = { ...clienteData, id: newId };
-    setClientes((prev) => [nuevo, ...prev]);
+    
+    // Deduplicar en estado local
+    setClientes((prev) => {
+      const sinDuplicado = prev.filter((c) => (c.codigo || '').toUpperCase() !== nuevo.codigo.toUpperCase());
+      const actualizado = [nuevo, ...sinDuplicado];
+      localStorage.setItem(`${STORAGE_KEY}_clientes`, JSON.stringify(actualizado));
+      return actualizado;
+    });
     logAccion('Clientes', 'Creación de Cliente', `Se registró al cliente: ${nuevo.nombre} (${nuevo.codigo})`);
 
-    // Guardar en la Base de Datos del servidor
+    // Guardar en la Base de Datos del servidor MySQL
     try {
-      await fetch('/api/clientes', {
+      setSyncStatus((prev) => ({ ...prev, isSyncing: true }));
+      const res = await fetch('/api/clientes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           codigo: nuevo.codigo,
           nombre: nuevo.nombre,
-          nit: nuevo.nit,
-          direccion: nuevo.direccion,
-          telefono: nuevo.telefono,
-          correo: nuevo.correo,
-          es_agente_retenedor: nuevo.esAgenteRetenedor,
-          contacto_principal: nuevo.contactoPrincipal
+          nit: nuevo.nit || 'CF',
+          direccion: nuevo.direccion || '',
+          telefono: nuevo.telefono || '',
+          correo: nuevo.correo || '',
+          es_agente_retenedor: nuevo.esAgenteRetenedor ?? true,
+          buques_habituales: Array.isArray(nuevo.buquesHabituales) ? nuevo.buquesHabituales.join(', ') : (nuevo.buquesHabituales || ''),
+          contacto_principal: nuevo.contactoPrincipal || ''
         })
       });
-    } catch (e) {
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        console.error(`[MySQL Error al guardar ${nuevo.codigo}]: HTTP ${res.status}`, errText);
+        setSyncStatus((prev) => ({
+          ...prev,
+          error: `Error al persistir ${nuevo.codigo} en MySQL (HTTP ${res.status}). Quedó guardado localmente.`,
+        }));
+      } else {
+        console.log(`[MySQL Éxito] Cliente ${nuevo.codigo} persistido en base de datos.`);
+        setSyncStatus((prev) => ({ ...prev, isOnline: true, error: null, lastSync: new Date() }));
+        sincronizarConServidor();
+      }
+    } catch (e: any) {
       console.error('Error al persistir cliente en MySQL:', e);
+      setSyncStatus((prev) => ({
+        ...prev,
+        error: `Error de conexión con el backend al guardar cliente: ${e?.message || 'Desconectado'}`,
+      }));
     }
   };
 
-  const updateCliente = (id: string, clienteData: Partial<Cliente>) => {
+  const updateCliente = async (id: string, clienteData: Partial<Cliente>) => {
     setClientes((prev) =>
       prev.map((c) => (c.id === id ? { ...c, ...clienteData } : c))
     );
     logAccion('Clientes', 'Actualización de Cliente', `Se modificó la información del cliente ID: ${id}`);
+
+    // Persistir en MySQL en el servidor
+    try {
+      await fetch(`/api/clientes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clienteData),
+      });
+    } catch (e) {
+      console.warn('Error al actualizar cliente en MySQL:', e);
+    }
   };
 
   // Pilotos CRUD con sincronización MySQL
@@ -1106,6 +1234,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setTheme,
         sessionNotice,
         clearSessionNotice,
+        syncStatus,
+        sincronizarAhora: sincronizarConServidor,
       }}
     >
       {children}

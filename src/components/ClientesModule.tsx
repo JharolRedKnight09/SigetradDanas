@@ -18,10 +18,11 @@ import {
   Edit2,
   AlertCircle,
   ShieldCheck,
+  RefreshCw,
 } from 'lucide-react';
 
 export const ClientesModule: React.FC = () => {
-  const { clientes, addCliente, updateCliente, currentUser, viajes, facturas, theme } = useApp();
+  const { clientes, addCliente, updateCliente, currentUser, viajes, facturas, theme, syncStatus, sincronizarAhora } = useApp();
   const isLight = theme === 'light';
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -68,7 +69,12 @@ export const ClientesModule: React.FC = () => {
       });
     } else {
       setEditingCliente(null);
-      const nextCode = `CLI-00${clientes.length + 1}`;
+      const maxNum = clientes.reduce((acc, c) => {
+        const num = parseInt((c.codigo || '').replace(/[^0-9]/g, ''), 10);
+        return !isNaN(num) && num > acc ? num : acc;
+      }, 0);
+      const nextNum = maxNum + 1;
+      const nextCode = `CLI-${nextNum < 10 ? '00' + nextNum : nextNum < 100 ? '0' + nextNum : nextNum}`;
       setFormData({
         codigo: nextCode,
         nombre: '',
@@ -153,16 +159,72 @@ export const ClientesModule: React.FC = () => {
           </p>
         </div>
 
-        {canEdit && (
+        <div className="flex items-center gap-2.5">
+          {/* Indicador de estado de base de datos MySQL */}
+          <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium ${
+            syncStatus.error
+              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+              : syncStatus.isOnline
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+              : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${
+              syncStatus.isSyncing
+                ? 'bg-amber-400 animate-ping'
+                : syncStatus.isOnline
+                ? 'bg-emerald-400'
+                : 'bg-rose-400'
+            }`} />
+            <span>
+              {syncStatus.isSyncing
+                ? 'Sincronizando...'
+                : syncStatus.isOnline
+                ? 'MySQL Sincronizado'
+                : 'Sin Conexión'}
+            </span>
+          </div>
+
           <button
-            onClick={() => handleOpenModal()}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold shadow-[0_0_15px_rgba(37,99,235,0.35)] transition-all cursor-pointer"
+            onClick={() => sincronizarAhora()}
+            disabled={syncStatus.isSyncing}
+            title="Forzar sincronización inmediata con la base de datos MySQL"
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              isLight
+                ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-700'
+                : 'bg-[#1E293B] hover:bg-[#334155] border-slate-700 text-slate-300'
+            }`}
           >
-            <Plus className="w-4 h-4" />
-            Registrar Nuevo Cliente
+            <RefreshCw className={`w-3.5 h-3.5 ${syncStatus.isSyncing ? 'animate-spin text-[#38BDF8]' : ''}`} />
+            <span className="hidden md:inline">Sincronizar</span>
           </button>
-        )}
+
+          {canEdit && (
+            <button
+              onClick={() => handleOpenModal()}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold shadow-[0_0_15px_rgba(37,99,235,0.35)] transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Registrar Nuevo Cliente
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Alerta de sincronización si hubo error o desconexión */}
+      {syncStatus.error && (
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+            <span>{syncStatus.error}</span>
+          </div>
+          <button
+            onClick={() => sincronizarAhora()}
+            className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold rounded text-xs cursor-pointer"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className={`p-3.5 rounded-xl border flex items-center gap-3 transition-colors ${

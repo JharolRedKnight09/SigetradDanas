@@ -202,6 +202,79 @@ async function initDatabase() {
       console.log('[MySQL] Usuario principal jairo.dannas inicializado en base de datos.');
     }
 
+    // Sembrar clientes base si la tabla está vacía
+    const [clienteCount] = await pool.query('SELECT COUNT(*) as count FROM clientes');
+    if (clienteCount && clienteCount[0].count === 0) {
+      await pool.query(`
+        INSERT INTO clientes (codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal)
+        VALUES 
+        ('CLI-001', 'Corporación Granelera del Atlántico, S.A.', '8492019-3', 'Km 292.5 Carretera al Atlántico, Puerto Barrios, Izabal', '+502 2334-9000', 'logistica@cgranelera.com.gt', TRUE, 'Sofía, Sakura, Barrios', 'Lic. Fernando Morales (Gerente de Tráfico)'),
+        ('CLI-002', 'Importadora y Molinera del Caribe, S.A.', '7192834-5', 'Zona Portuaria Santo Tomás de Castilla, Izabal', '+502 2450-1100', 'cuentasporpagar@molineracaribe.com', TRUE, 'Sofía, Barrios, Trigo', 'Ing. Sandra Valenzuela'),
+        ('CLI-003', 'Cementos y Concretos Mi Guate, S.A.', '9182301-1', 'Calzada Roosevelt 14-22 Zona 11, Guatemala', '+502 2210-4400', 'abastecimiento@miguatedesarrollo.gt', FALSE, 'Clinkers, Mi Guate', 'Ing. Rodrigo Castillo'),
+        ('CLI-004', 'Carbones y Minerales de Centroamérica, S.A.', '6541290-7', 'Puerto Barrios, Terminal de Graneles Sólidos', '+502 7948-2200', 'operaciones@carbonminerales.com', TRUE, 'Carbón Local, Carbón Largo', 'Don Héctor Solórzano'),
+        ('CLI-005', 'Agroindustria Palo Gordo y Cía.', '5102934-2', 'San Antonio Suchitepéquez / Ruta Sur', '+502 7761-9000', 'transporte@palogordo.com.gt', TRUE, 'Palo Gordo, Maíz', 'Lic. Manuel Rivera')
+      `);
+      console.log('[MySQL] Clientes base inicializados en base de datos.');
+    }
+
+    // Sembrar pilotos base si la tabla está vacía
+    const [pilotoCount] = await pool.query('SELECT COUNT(*) as count FROM pilotos');
+    if (pilotoCount && pilotoCount[0].count === 0) {
+      await pool.query(`
+        INSERT INTO pilotos (nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
+        VALUES
+        ('Pedro Ramírez', '2415 88910 1801', 'LIC-A-289104', '+502 3341-9988', 'A', '2027-11-15', 'En Viaje', 350.00, 'C-182BKZ'),
+        ('Juan Choc', '1892 34109 1802', 'LIC-A-177241', '+502 4490-2133', 'A', '2026-08-20', 'En Viaje', 350.00, 'C-293BLX'),
+        ('Carlos Tun', '2011 55419 1801', 'LIC-A-309122', '+502 5122-8766', 'A', '2028-04-12', 'Disponible', 350.00, 'C-404BMY'),
+        ('Rigoberto Méndez', '1944 67102 1801', 'LIC-A-199401', '+502 4811-9034', 'A', '2026-12-05', 'Disponible', 350.00, 'C-715BPW'),
+        ('Miguel Morales', '2289 44109 1803', 'LIC-A-255018', '+502 3012-7744', 'A', '2027-02-18', 'Descanso', 350.00, 'C-906BRT')
+      `);
+      console.log('[MySQL] Pilotos base inicializados en base de datos.');
+    }
+
+    // Sembrar góndolas base si la tabla está vacía
+    const [gondolaCount] = await pool.query('SELECT COUNT(*) as count FROM gondolas');
+    if (gondolaCount && gondolaCount[0].count === 0) {
+      await pool.query(`
+        INSERT INTO gondolas (placa, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
+        VALUES
+        ('C-182BKZ', 'Jairo Dannas', 'Cabezal Freightliner Cascadia + Góndola 3 Ejes', 38.00, 'En Ruta', 145000),
+        ('C-293BLX', 'Jairo Dannas', 'Cabezal Kenworth T680 + Góndola 3 Ejes', 39.50, 'En Ruta', 112000),
+        ('C-404BMY', 'Abner Dannas', 'Cabezal International ProStar + Góndola 3 Ejes', 38.00, 'Disponible', 98000),
+        ('C-715BPW', 'Abner Dannas', 'Cabezal Freightliner Columbia + Góndola 3 Ejes', 36.50, 'Disponible', 185000),
+        ('C-906BRT', 'Edwin Dannas', 'Cabezal Mack Pinnacle + Góndola 3 Ejes', 40.00, 'Disponible', 160000),
+        ('C-337BJS', 'Edwin Dannas', 'Cabezal Volvo VNL + Góndola 3 Ejes', 37.00, 'Mantenimiento', 275000)
+      `);
+      console.log('[MySQL] Góndolas base inicializadas en base de datos.');
+    }
+
+    // Migración segura de columnas si la tabla ya existía previamente con menos columnas
+    const safeAddColumn = async (table, col, typeDef) => {
+      try {
+        await pool.query(`ALTER TABLE ${table} ADD COLUMN ${col} ${typeDef}`);
+      } catch (e) {
+        // Ignorar si la columna ya existe en la tabla
+      }
+    };
+    await safeAddColumn('clientes', 'codigo', 'VARCHAR(30)');
+    await safeAddColumn('clientes', 'nombre', 'VARCHAR(150)');
+    await safeAddColumn('clientes', 'nit', 'VARCHAR(30)');
+    await safeAddColumn('clientes', 'direccion', "VARCHAR(255) DEFAULT ''");
+    await safeAddColumn('clientes', 'telefono', "VARCHAR(50) DEFAULT ''");
+    await safeAddColumn('clientes', 'correo', "VARCHAR(100) DEFAULT ''");
+    await safeAddColumn('clientes', 'es_agente_retenedor', 'BOOLEAN DEFAULT TRUE');
+    await safeAddColumn('clientes', 'buques_habituales', 'TEXT');
+    await safeAddColumn('clientes', 'contacto_principal', "VARCHAR(150) DEFAULT ''");
+    await safeAddColumn('clientes', 'activo', 'BOOLEAN DEFAULT TRUE');
+    await safeAddColumn('pilotos', 'activo', 'BOOLEAN DEFAULT TRUE');
+    await safeAddColumn('gondolas', 'activo', 'BOOLEAN DEFAULT TRUE');
+
+    try {
+      await pool.query('ALTER TABLE clientes ADD UNIQUE KEY uq_cliente_codigo (codigo)');
+    } catch (e) {
+      // Ignorar si el índice único ya existe
+    }
+
     console.log('[MySQL] Tablas verificadas e inicializadas en sigetrad_db.');
   } catch (err) {
     console.error('[MySQL Error] No se pudo inicializar la base de datos:', err.message);
@@ -223,7 +296,7 @@ app.get('/api/health', async (req, res) => {
       status: 'OK',
       database: 'Conectada exitosamente a MySQL (sigetrad_db)',
       servidor: 'SIGETRAD Enterprise TMS Backend v1.0',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
   } catch (err) {
     res.status(500).json({ status: 'ERROR', message: err.message });
@@ -236,6 +309,7 @@ app.get('/api/clientes', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM clientes ORDER BY id DESC');
     res.json(rows);
   } catch (err) {
+    console.error('[API GET /api/clientes Error]:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -243,13 +317,98 @@ app.get('/api/clientes', async (req, res) => {
 app.post('/api/clientes', async (req, res) => {
   try {
     const { codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal } = req.body;
+    
+    const safeCodigo = String(codigo || '').trim().toUpperCase();
+    if (!safeCodigo) {
+      return res.status(400).json({ error: 'El código del cliente es obligatorio' });
+    }
+    const safeNombre = String(nombre || 'Cliente').trim();
+    const safeNit = String(nit || 'CF').trim();
+    const safeDireccion = String(direccion || '').trim();
+    const safeTelefono = String(telefono || '').trim();
+    const safeCorreo = String(correo || '').trim();
+    const safeRetenedor = es_agente_retenedor !== false && es_agente_retenedor !== 0;
+    const safeBuques = Array.isArray(buques_habituales) 
+      ? buques_habituales.join(', ') 
+      : String(buques_habituales || '');
+    const safeContacto = String(contacto_principal || '').trim();
+
+    console.log(`[API POST /api/clientes] Guardando cliente: ${safeCodigo} - ${safeNombre}`);
     const [result] = await pool.query(
       `INSERT INTO clientes (codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), nit=VALUES(nit), telefono=VALUES(telefono), correo=VALUES(correo)`,
-      [codigo, nombre, nit, direccion || '', telefono || '', correo || '', es_agente_retenedor ?? true, buques_habituales || '', contacto_principal || '']
+       ON DUPLICATE KEY UPDATE 
+         nombre = VALUES(nombre), 
+         nit = VALUES(nit), 
+         direccion = VALUES(direccion),
+         telefono = VALUES(telefono), 
+         correo = VALUES(correo),
+         es_agente_retenedor = VALUES(es_agente_retenedor),
+         buques_habituales = VALUES(buques_habituales),
+         contacto_principal = VALUES(contacto_principal)`,
+      [
+        safeCodigo, 
+        safeNombre, 
+        safeNit, 
+        safeDireccion, 
+        safeTelefono, 
+        safeCorreo, 
+        safeRetenedor, 
+        safeBuques, 
+        safeContacto
+      ]
     );
-    res.status(201).json({ id: result.insertId, message: 'Cliente guardado exitosamente en MySQL' });
+    console.log(`[API POST /api/clientes] Éxito al persistir ${safeCodigo} en MySQL (insertId: ${result.insertId})`);
+    res.status(201).json({ id: result.insertId, codigo: safeCodigo, message: 'Cliente guardado exitosamente en MySQL' });
+  } catch (err) {
+    console.error('[API POST /api/clientes Error]:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/clientes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cleanId = String(id).replace('cli-', '');
+    const { codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal } = req.body;
+    await pool.query(
+      `UPDATE clientes SET 
+         codigo = COALESCE(?, codigo),
+         nombre = COALESCE(?, nombre),
+         nit = COALESCE(?, nit),
+         direccion = COALESCE(?, direccion),
+         telefono = COALESCE(?, telefono),
+         correo = COALESCE(?, correo),
+         es_agente_retenedor = COALESCE(?, es_agente_retenedor),
+         buques_habituales = COALESCE(?, buques_habituales),
+         contacto_principal = COALESCE(?, contacto_principal)
+       WHERE id = ? OR codigo = ?`,
+      [
+        codigo,
+        nombre,
+        nit,
+        direccion,
+        telefono,
+        correo,
+        es_agente_retenedor,
+        Array.isArray(buques_habituales) ? buques_habituales.join(', ') : buques_habituales,
+        contacto_principal,
+        cleanId,
+        id
+      ]
+    );
+    res.json({ message: 'Cliente actualizado exitosamente en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/clientes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cleanId = String(id).replace('cli-', '');
+    await pool.query('DELETE FROM clientes WHERE id = ? OR codigo = ?', [cleanId, id]);
+    res.json({ message: 'Cliente eliminado exitosamente de MySQL' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
