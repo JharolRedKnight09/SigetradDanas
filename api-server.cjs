@@ -212,6 +212,8 @@ async function initDatabase() {
     await safeAddColumn('usuarios', 'piloto_id', 'VARCHAR(50)');
     await safeAddColumn('usuarios', 'estado', "VARCHAR(30) DEFAULT 'Activo'");
     await safeAddColumn('usuarios', 'fecha_creacion', 'VARCHAR(50)');
+    await safeAddColumn('usuarios', 'password_hash', 'VARCHAR(255) DEFAULT ''');
+    
     try {
       await pool.query('ALTER TABLE usuarios ADD UNIQUE KEY uq_usuarios_username (username)');
     } catch (e) {}
@@ -768,7 +770,9 @@ app.post('/api/combustible', async (req, res) => {
 // 9. Gestión de Usuarios y Accesos Multi-dispositivo
 app.get('/api/usuarios', async (req, res) => {
   try {
+    console.log('[API GET /api/usuarios] Solicitando usuarios de MySQL...');
     const [rows] = await pool.query('SELECT * FROM usuarios ORDER BY id ASC');
+    console.log('[API GET /api/usuarios] Usuarios encontrados:', rows.length);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -783,10 +787,10 @@ app.post('/api/usuarios', async (req, res) => {
       cleanUsername = u.nombre.trim().toLowerCase().replace(/\s+/g, '.');
     }
     if (!cleanUsername) {
-      cleanUsername = 'user_${Date.now()}';
+      cleanUsername = `user_${Date.now()}`;
     }
     const safeNombre = (u.nombre || 'Usuario').trim();
-    const safeEmail = (u.email || '').trim().toLowerCase() || '${cleanUsername}@dannas.com';
+    const safeEmail = (u.email || '').trim().toLowerCase() || `${cleanUsername}@dannas.com`;
     const safeTelefono = u.telefono || '+502 0000-0000';
     const safeRol = u.rol || 'ADMIN';
     const safeCargo = u.cargo || 'Operador';
@@ -826,8 +830,8 @@ app.post('/api/usuarios', async (req, res) => {
     );
     res.status(201).json({ id: result.insertId, message: 'Usuario registrado exitosamente en MySQL' });
   } catch (err) {
-    console.error('[API POST /api/usuarios Error]:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('[API POST /api/usuarios Error]:', err.message, err.sql);
+    res.status(500).json({ error: err.message, sql: err.sql });
   }
 });
 
