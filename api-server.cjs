@@ -186,6 +186,7 @@ async function initDatabase() {
         rol VARCHAR(40) NOT NULL DEFAULT 'ADMIN',
         cargo VARCHAR(120) DEFAULT '',
         password VARCHAR(255) NOT NULL DEFAULT 'admin',
+        password_hash VARCHAR(255) DEFAULT '',
         piloto_id VARCHAR(50) DEFAULT NULL,
         estado VARCHAR(30) DEFAULT 'Activo',
         fecha_creacion VARCHAR(50),
@@ -201,18 +202,36 @@ async function initDatabase() {
         // Ignorar si la columna ya existe en la tabla
       }
     };
+
+    const safeModifyColumn = async (table, col, typeDef) => {
+      try {
+        await pool.query(`ALTER TABLE ${table} MODIFY COLUMN ${col} ${typeDef}`);
+      } catch (e) {
+        // Ignorar si no se puede modificar
+      }
+    };
+
     await safeAddColumn('usuarios', 'user_id_str', 'VARCHAR(50)');
     await safeAddColumn('usuarios', 'username', 'VARCHAR(80)');
     await safeAddColumn('usuarios', 'nombre', 'VARCHAR(150)');
     await safeAddColumn('usuarios', 'email', 'VARCHAR(120)');
     await safeAddColumn('usuarios', 'telefono', "VARCHAR(50) DEFAULT ''");
-    await safeAddColumn('usuarios', 'rol', "VARCHAR(40) DEFAULT 'ADMIN'");
+    await safeAddColumn('usuarios', 'rol', "VARCHAR(50) DEFAULT 'ADMIN'");
     await safeAddColumn('usuarios', 'cargo', "VARCHAR(120) DEFAULT ''");
     await safeAddColumn('usuarios', 'password', "VARCHAR(255) DEFAULT 'admin'");
     await safeAddColumn('usuarios', 'piloto_id', 'VARCHAR(50)');
     await safeAddColumn('usuarios', 'estado', "VARCHAR(30) DEFAULT 'Activo'");
     await safeAddColumn('usuarios', 'fecha_creacion', 'VARCHAR(50)');
-    await safeAddColumn('usuarios', 'password_hash', "VARCHAR(255) DEFAULT \x27\x27");
+    await safeAddColumn('usuarios', 'password_hash', "VARCHAR(255) DEFAULT ''");
+
+    // Asegurar que columnas existentes no tengan restricciones incompatibles (NOT NULL sin default o ENUM restrictivo)
+    await safeModifyColumn('usuarios', 'rol', "VARCHAR(50) NOT NULL DEFAULT 'ADMIN'");
+    await safeModifyColumn('usuarios', 'password_hash', "VARCHAR(255) NULL DEFAULT ''");
+    await safeModifyColumn('usuarios', 'password', "VARCHAR(255) NULL DEFAULT 'admin'");
+    await safeModifyColumn('usuarios', 'telefono', "VARCHAR(50) NULL DEFAULT ''");
+    await safeModifyColumn('usuarios', 'cargo', "VARCHAR(120) NULL DEFAULT ''");
+    await safeModifyColumn('usuarios', 'estado', "VARCHAR(30) NULL DEFAULT 'Activo'");
+    await safeModifyColumn('usuarios', 'fecha_creacion', "VARCHAR(50) NULL DEFAULT ''");
     
     try {
       await pool.query('ALTER TABLE usuarios ADD UNIQUE KEY uq_usuarios_username (username)');
@@ -231,6 +250,9 @@ async function initDatabase() {
 
     await safeAddColumn('pilotos', 'nombre_completo', "VARCHAR(150) NOT NULL DEFAULT 'Piloto'");
     await safeAddColumn('pilotos', 'nombre', "VARCHAR(150) NOT NULL DEFAULT 'Piloto'");
+    await safeModifyColumn('pilotos', 'nombre', "VARCHAR(150) NULL DEFAULT 'Piloto'");
+    await safeModifyColumn('pilotos', 'nombre_completo', "VARCHAR(150) NULL DEFAULT 'Piloto'");
+
     try {
       await pool.query("UPDATE pilotos SET nombre_completo = nombre WHERE (nombre_completo IS NULL OR nombre_completo = '' OR nombre_completo = 'Piloto') AND (nombre IS NOT NULL AND nombre != '')");
     } catch (e) {}
@@ -288,8 +310,8 @@ async function initDatabase() {
     const [userCount] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
     if (userCount && userCount[0].count === 0) {
       await pool.query(`
-        INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, estado, fecha_creacion)
-        VALUES ('usr-1', 'jairo.dannas', 'Jairo Dannas', 'jairo.dannas@dannas.com', '+502 5555-0100', 'ADMIN', 'Gerente General y Propietario', 'admin', 'Activo', CURDATE())
+        INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, password_hash, estado, fecha_creacion)
+        VALUES ('usr-1', 'jairo.dannas', 'Jairo Dannas', 'jairo.dannas@dannas.com', '+502 5555-0100', 'ADMIN', 'Gerente General y Propietario', 'admin', '', 'Activo', CURDATE())
       `);
       console.log('[MySQL] Usuario principal jairo.dannas inicializado en base de datos.');
     }
@@ -313,13 +335,13 @@ async function initDatabase() {
     const [pilotoCount] = await pool.query('SELECT COUNT(*) as count FROM pilotos');
     if (pilotoCount && pilotoCount[0].count === 0) {
       await pool.query(`
-        INSERT INTO pilotos (nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
+        INSERT INTO pilotos (nombre, nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
         VALUES
-        ('Pedro Ramírez', '2415 88910 1801', 'LIC-A-289104', '+502 3341-9988', 'A', '2027-11-15', 'En Viaje', 350.00, 'C-182BKZ'),
-        ('Juan Choc', '1892 34109 1802', 'LIC-A-177241', '+502 4490-2133', 'A', '2026-08-20', 'En Viaje', 350.00, 'C-293BLX'),
-        ('Carlos Tun', '2011 55419 1801', 'LIC-A-309122', '+502 5122-8766', 'A', '2028-04-12', 'Disponible', 350.00, 'C-404BMY'),
-        ('Rigoberto Méndez', '1944 67102 1801', 'LIC-A-199401', '+502 4811-9034', 'A', '2026-12-05', 'Disponible', 350.00, 'C-715BPW'),
-        ('Miguel Morales', '2289 44109 1803', 'LIC-A-255018', '+502 3012-7744', 'A', '2027-02-18', 'Descanso', 350.00, 'C-906BRT')
+        ('Pedro Ramírez', 'Pedro Ramírez', '2415 88910 1801', 'LIC-A-289104', '+502 3341-9988', 'A', '2027-11-15', 'En Viaje', 350.00, 'C-182BKZ'),
+        ('Juan Choc', 'Juan Choc', '1892 34109 1802', 'LIC-A-177241', '+502 4490-2133', 'A', '2026-08-20', 'En Viaje', 350.00, 'C-293BLX'),
+        ('Carlos Tun', 'Carlos Tun', '2011 55419 1801', 'LIC-A-309122', '+502 5122-8766', 'A', '2028-04-12', 'Disponible', 350.00, 'C-404BMY'),
+        ('Rigoberto Méndez', 'Rigoberto Méndez', '1944 67102 1801', 'LIC-A-199401', '+502 4811-9034', 'A', '2026-12-05', 'Disponible', 350.00, 'C-715BPW'),
+        ('Miguel Morales', 'Miguel Morales', '2289 44109 1803', 'LIC-A-255018', '+502 3012-7744', 'A', '2027-02-18', 'Descanso', 350.00, 'C-906BRT')
       `);
       console.log('[MySQL] Pilotos base inicializados en base de datos.');
     }
@@ -594,10 +616,12 @@ app.get('/api/pilotos', async (req, res) => {
 app.post('/api/pilotos', async (req, res) => {
   try {
     const p = req.body;
+    const safeNombre = p.nombreCompleto || p.nombre_completo || p.nombre || 'Piloto';
     const [result] = await pool.query(
-      `INSERT INTO pilotos (nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO pilotos (nombre, nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
+         nombre = VALUES(nombre),
          nombre_completo = VALUES(nombre_completo),
          licencia = VALUES(licencia),
          telefono = VALUES(telefono),
@@ -607,7 +631,8 @@ app.post('/api/pilotos', async (req, res) => {
          tarifa_viaje = VALUES(tarifa_viaje),
          gondola_habitual = VALUES(gondola_habitual)`,
       [
-        p.nombreCompleto || p.nombre_completo || 'Piloto',
+        safeNombre,
+        safeNombre,
         p.dpi || `DPI-${Date.now()}`,
         p.licencia || 'A',
         p.telefono || '',
@@ -803,8 +828,8 @@ app.post('/api/usuarios', async (req, res) => {
     console.log(`[API POST /api/usuarios] Guardando usuario: ${cleanUsername} (${safeNombre})`);
 
     const [result] = await pool.query(
-      `INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, piloto_id, estado, fecha_creacion)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, password_hash, piloto_id, estado, fecha_creacion)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE 
          nombre = VALUES(nombre),
          email = VALUES(email),
@@ -812,6 +837,7 @@ app.post('/api/usuarios', async (req, res) => {
          rol = VALUES(rol),
          cargo = VALUES(cargo),
          password = VALUES(password),
+         password_hash = VALUES(password_hash),
          piloto_id = VALUES(piloto_id),
          estado = VALUES(estado)`,
       [
@@ -823,6 +849,7 @@ app.post('/api/usuarios', async (req, res) => {
         safeRol,
         safeCargo,
         safePassword,
+        '',
         safePilotoId,
         safeEstado,
         safeFechaCreacion
