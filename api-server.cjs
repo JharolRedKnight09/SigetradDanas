@@ -201,6 +201,21 @@ async function initDatabase() {
         // Ignorar si la columna ya existe en la tabla
       }
     };
+    await safeAddColumn('usuarios', 'user_id_str', 'VARCHAR(50)');
+    await safeAddColumn('usuarios', 'username', 'VARCHAR(80)');
+    await safeAddColumn('usuarios', 'nombre', 'VARCHAR(150)');
+    await safeAddColumn('usuarios', 'email', 'VARCHAR(120)');
+    await safeAddColumn('usuarios', 'telefono', "VARCHAR(50) DEFAULT ''");
+    await safeAddColumn('usuarios', 'rol', "VARCHAR(40) DEFAULT 'ADMIN'");
+    await safeAddColumn('usuarios', 'cargo', "VARCHAR(120) DEFAULT ''");
+    await safeAddColumn('usuarios', 'password', "VARCHAR(255) DEFAULT 'admin'");
+    await safeAddColumn('usuarios', 'piloto_id', 'VARCHAR(50)');
+    await safeAddColumn('usuarios', 'estado', "VARCHAR(30) DEFAULT 'Activo'");
+    await safeAddColumn('usuarios', 'fecha_creacion', 'VARCHAR(50)');
+    try {
+      await pool.query('ALTER TABLE usuarios ADD UNIQUE KEY uq_usuarios_username (username)');
+    } catch (e) {}
+    
     await safeAddColumn('clientes', 'codigo', 'VARCHAR(30)');
     await safeAddColumn('clientes', 'nombre', 'VARCHAR(150)');
     await safeAddColumn('clientes', 'nit', 'VARCHAR(30)');
@@ -763,7 +778,26 @@ app.get('/api/usuarios', async (req, res) => {
 app.post('/api/usuarios', async (req, res) => {
   try {
     const u = req.body;
-    const cleanUsername = (u.username || '').trim().toLowerCase();
+    let cleanUsername = (u.username || '').trim().toLowerCase();
+    if (!cleanUsername && u.nombre) {
+      cleanUsername = u.nombre.trim().toLowerCase().replace(/\s+/g, '.');
+    }
+    if (!cleanUsername) {
+      cleanUsername = 'user_${Date.now()}';
+    }
+    const safeNombre = (u.nombre || 'Usuario').trim();
+    const safeEmail = (u.email || '').trim().toLowerCase() || '${cleanUsername}@dannas.com';
+    const safeTelefono = u.telefono || '+502 0000-0000';
+    const safeRol = u.rol || 'ADMIN';
+    const safeCargo = u.cargo || 'Operador';
+    const safePassword = u.password || 'admin';
+    const safePilotoId = u.pilotoId || null;
+    const safeEstado = u.estado || 'Activo';
+    const safeFechaCreacion = u.fechaCreacion || new Date().toISOString().split('T')[0];
+    const safeUserId = u.id || `usr-${Date.now()}`;
+
+    console.log(`[API POST /api/usuarios] Guardando usuario: ${cleanUsername} (${safeNombre})`);
+
     const [result] = await pool.query(
       `INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, piloto_id, estado, fecha_creacion)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -777,21 +811,22 @@ app.post('/api/usuarios', async (req, res) => {
          piloto_id = VALUES(piloto_id),
          estado = VALUES(estado)`,
       [
-        u.id || `usr-${Date.now()}`,
+        safeUserId,
         cleanUsername,
-        (u.nombre || '').trim(),
-        (u.email || '').trim().toLowerCase(),
-        u.telefono || '+502 0000-0000',
-        u.rol || 'ADMIN',
-        u.cargo || 'Operador',
-        u.password || 'admin',
-        u.pilotoId || null,
-        u.estado || 'Activo',
-        u.fechaCreacion || new Date().toISOString().split('T')[0]
+        safeNombre,
+        safeEmail,
+        safeTelefono,
+        safeRol,
+        safeCargo,
+        safePassword,
+        safePilotoId,
+        safeEstado,
+        safeFechaCreacion
       ]
     );
     res.status(201).json({ id: result.insertId, message: 'Usuario registrado exitosamente en MySQL' });
   } catch (err) {
+    console.error('[API POST /api/usuarios Error]:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -909,4 +944,3 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[SIGETRAD Backend] Base de Datos destino: ${dbConfig.database}@${dbConfig.host}`);
   console.log(`=======================================================`);
 });
-
