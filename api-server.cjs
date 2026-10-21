@@ -12,14 +12,14 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
 // Configuración de Conexión a Base de Datos MySQL
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || null,
   user: process.env.DB_USER || 'sigetrad_user',
   password: process.env.DB_PASSWORD || 'Sigetrad2026Secure!',
   database: process.env.DB_NAME || 'sigetrad_db',
@@ -212,7 +212,7 @@ async function initDatabase() {
     await safeAddColumn('usuarios', 'piloto_id', 'VARCHAR(50)');
     await safeAddColumn('usuarios', 'estado', "VARCHAR(30) DEFAULT 'Activo'");
     await safeAddColumn('usuarios', 'fecha_creacion', 'VARCHAR(50)');
-    await safeAddColumn('usuarios', 'password_hash', 'VARCHAR(255) DEFAULT ''');
+    await safeAddColumn('usuarios', 'password_hash', "VARCHAR(255) DEFAULT \x27\x27");
     
     try {
       await pool.query('ALTER TABLE usuarios ADD UNIQUE KEY uq_usuarios_username (username)');
