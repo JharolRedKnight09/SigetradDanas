@@ -292,10 +292,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [isAuthenticated]);
 
-  // Sincronización con la API de MySQL en el servidor (Multi-tabla en tiempo real)
+  // Sincronización con la API de MySQL en el servidor (Multi-tabla en tiempo real para todos los dispositivos)
   useEffect(() => {
     const sincronizarConServidor = async () => {
       try {
+        // 0. Sincronizar Usuarios desde MySQL
+        const resUsuarios = await fetch('/api/usuarios');
+        if (resUsuarios.ok) {
+          const usuariosDb = await resUsuarios.json();
+          if (Array.isArray(usuariosDb) && usuariosDb.length > 0) {
+            const usuariosFormateados: User[] = usuariosDb.map((u: any) => ({
+              id: u.user_id_str || `usr-${u.id}`,
+              username: u.username,
+              nombre: u.nombre,
+              email: u.email,
+              telefono: u.telefono || '+502 0000-0000',
+              rol: u.rol as UserRole,
+              cargo: u.cargo || '',
+              password: u.password || 'admin',
+              pilotoId: u.piloto_id || undefined,
+              estado: (u.estado || 'Activo') as 'Activo' | 'Inactivo',
+              fechaCreacion: u.fecha_creacion || '',
+            }));
+
+            setUsers((prev) => {
+              const idsDb = new Set(usuariosFormateados.map((u) => u.username.toLowerCase()));
+              // Mantener usuarios locales que aún no hayan sincronizado pero priorizar DB
+              const localesRestantes = prev.filter((p) => !idsDb.has(p.username.toLowerCase()));
+              const combinados = [...usuariosFormateados, ...localesRestantes];
+              localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(combinados));
+              return combinados;
+            });
+          }
+        }
+
         // 1. Sincronizar Clientes desde MySQL
         const resClientes = await fetch('/api/clientes');
         if (resClientes.ok) {
@@ -375,12 +405,76 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
           }
         }
+
+        // 3. Sincronizar Pilotos desde MySQL
+        const resPilotos = await fetch('/api/pilotos');
+        if (resPilotos.ok) {
+          const pilotosDb = await resPilotos.json();
+          if (Array.isArray(pilotosDb) && pilotosDb.length > 0) {
+            const pilotosFormateados: Piloto[] = pilotosDb.map((p: any) => ({
+              id: `pil-${p.id}`,
+              nombreCompleto: p.nombre_completo || p.nombreCompleto,
+              dpi: p.dpi,
+              licencia: p.licencia,
+              telefono: p.telefono || '',
+              tipoLicencia: p.tipo_licencia || p.tipoLicencia || 'A',
+              vencimientoLicencia: p.vencimiento_licencia || p.vencimientoLicencia || '2027-12-31',
+              estado: p.estado || 'Disponible',
+              tarifaViaje: Number(p.tarifa_viaje || p.tarifaViaje || 350),
+              gondolaHabitual: p.gondola_habitual || p.gondolaHabitual || '',
+              activo: Boolean(p.activo ?? true)
+            }));
+            setPilotos((prev) => {
+              const dpisExistentes = new Set(pilotosFormateados.map((p) => p.dpi));
+              const filtrados = prev.filter((p) => !dpisExistentes.has(p.dpi));
+              return [...pilotosFormateados, ...filtrados];
+            });
+          }
+        }
+
+        // 4. Sincronizar Góndolas desde MySQL
+        const resGondolas = await fetch('/api/gondolas');
+        if (resGondolas.ok) {
+          const gondolasDb = await resGondolas.json();
+          if (Array.isArray(gondolasDb) && gondolasDb.length > 0) {
+            const gondolasFormateadas: Gondola[] = gondolasDb.map((g: any) => ({
+              id: `gon-${g.id}`,
+              placa: g.placa,
+              propietario: g.propietario,
+              tipo: g.tipo || 'Triaxial Volteo',
+              capacidadToneladas: Number(g.capacidad_toneladas || g.capacidadToneladas || 38),
+              estado: g.estado || 'Disponible',
+              kilometrajeActual: Number(g.kilometraje_actual || g.kilometrajeActual || 120000),
+              activo: Boolean(g.activo ?? true)
+            }));
+            setGondolas((prev) => {
+              const placasExistentes = new Set(gondolasFormateadas.map((g) => g.placa));
+              const filtrados = prev.filter((g) => !placasExistentes.has(g.placa));
+              return [...gondolasFormateadas, ...filtrados];
+            });
+          }
+        }
       } catch (err) {
         console.warn('API local o servidor no disponible temporalmente:', err);
       }
     };
 
+    // Ejecutar sincronización al cargar
     sincronizarConServidor();
+
+    // Sincronización continua cada 8 segundos para reflejar cambios en celular y otros navegadores
+    const syncInterval = setInterval(sincronizarConServidor, 8000);
+
+    // Sincronización inmediata al volver a la pestaña/ventana
+    const handleFocus = () => sincronizarConServidor();
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      clearInterval(syncInterval);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('visibilitychange', handleFocus);
+    };
   }, []);
 
   const logAccion = (modulo: string, accion: string, detalle: string) => {
@@ -861,6 +955,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUsers(updated);
     localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(updated));
     logAccion('Seguridad', 'Registro de Usuario', `Se creó el usuario "${newUser.nombre}" con rol ${newUser.rol}`);
+
+    // Persistir directamente a MySQL en el servidor para sincronización inmediata en celular y otros navegadores
+    try {
+      fetch('/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      }).catch((err) => console.warn('Error al persistir usuario en servidor:', err));
+    } catch (e) {
+      console.warn(e);
+    }
+
     return { success: true };
   };
 
@@ -873,6 +979,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify({ ...currentUser, ...userData }));
     }
     logAccion('Seguridad', 'Usuario Modificado', `Actualización en usuario ID: ${id}`);
+
+    // Persistir cambios en MySQL
+    try {
+      fetch(`/api/usuarios/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      }).catch((err) => console.warn('Error al actualizar usuario en servidor:', err));
+    } catch (e) {
+      console.warn(e);
+    }
   };
 
   const deleteUser = (id: string): { success: boolean; error?: string } => {
@@ -885,6 +1002,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUsers(updated);
     localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(updated));
     logAccion('Seguridad', 'Usuario Eliminado', `Se eliminó al usuario ${target.nombre} (${target.username})`);
+
+    // Eliminar de MySQL
+    try {
+      fetch(`/api/usuarios/${id}`, {
+        method: 'DELETE'
+      }).catch((err) => console.warn('Error al eliminar usuario en servidor:', err));
+    } catch (e) {
+      console.warn(e);
+    }
+
     return { success: true };
   };
 

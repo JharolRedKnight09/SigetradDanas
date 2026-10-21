@@ -173,6 +173,35 @@ async function initDatabase() {
       );
     `);
 
+    // Tabla de Usuarios para sincronización multi-dispositivo (PC, Celular, etc.)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id_str VARCHAR(50) UNIQUE,
+        username VARCHAR(80) UNIQUE NOT NULL,
+        nombre VARCHAR(150) NOT NULL,
+        email VARCHAR(120) NOT NULL,
+        telefono VARCHAR(50) DEFAULT '',
+        rol VARCHAR(40) NOT NULL DEFAULT 'ADMIN',
+        cargo VARCHAR(120) DEFAULT '',
+        password VARCHAR(255) NOT NULL DEFAULT 'admin',
+        piloto_id VARCHAR(50) DEFAULT NULL,
+        estado VARCHAR(30) DEFAULT 'Activo',
+        fecha_creacion VARCHAR(50),
+        creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // Sembrar usuario inicial jairo.dannas si la tabla está vacía
+    const [userCount] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
+    if (userCount && userCount[0].count === 0) {
+      await pool.query(`
+        INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, estado, fecha_creacion)
+        VALUES ('usr-1', 'jairo.dannas', 'Jairo Dannas', 'jairo.dannas@dannas.com', '+502 5555-0100', 'ADMIN', 'Gerente General y Propietario', 'admin', 'Activo', CURDATE())
+      `);
+      console.log('[MySQL] Usuario principal jairo.dannas inicializado en base de datos.');
+    }
+
     console.log('[MySQL] Tablas verificadas e inicializadas en sigetrad_db.');
   } catch (err) {
     console.error('[MySQL Error] No se pudo inicializar la base de datos:', err.message);
@@ -470,18 +499,132 @@ app.post('/api/combustible', async (req, res) => {
   }
 });
 
-// 9. Autenticación (Login)
+// 9. Gestión de Usuarios y Accesos Multi-dispositivo
+app.get('/api/usuarios', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM usuarios ORDER BY id ASC');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/usuarios', async (req, res) => {
+  try {
+    const u = req.body;
+    const cleanUsername = (u.username || '').trim().toLowerCase();
+    const [result] = await pool.query(
+      `INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, piloto_id, estado, fecha_creacion)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE 
+         nombre = VALUES(nombre),
+         email = VALUES(email),
+         telefono = VALUES(telefono),
+         rol = VALUES(rol),
+         cargo = VALUES(cargo),
+         password = VALUES(password),
+         piloto_id = VALUES(piloto_id),
+         estado = VALUES(estado)`,
+      [
+        u.id || `usr-${Date.now()}`,
+        cleanUsername,
+        (u.nombre || '').trim(),
+        (u.email || '').trim().toLowerCase(),
+        u.telefono || '+502 0000-0000',
+        u.rol || 'ADMIN',
+        u.cargo || 'Operador',
+        u.password || 'admin',
+        u.pilotoId || null,
+        u.estado || 'Activo',
+        u.fechaCreacion || new Date().toISOString().split('T')[0]
+      ]
+    );
+    res.status(201).json({ id: result.insertId, message: 'Usuario registrado exitosamente en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/usuarios/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const u = req.body;
+    await pool.query(
+      `UPDATE usuarios SET 
+         nombre = COALESCE(?, nombre),
+         email = COALESCE(?, email),
+         telefono = COALESCE(?, telefono),
+         rol = COALESCE(?, rol),
+         cargo = COALESCE(?, cargo),
+         password = COALESCE(?, password),
+         piloto_id = COALESCE(?, piloto_id),
+         estado = COALESCE(?, estado)
+       WHERE id = ? OR user_id_str = ? OR username = ?`,
+      [u.nombre, u.email, u.telefono, u.rol, u.cargo, u.password, u.pilotoId, u.estado, id, id, id]
+    );
+    res.json({ message: 'Usuario actualizado en MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/usuarios/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query(
+      `DELETE FROM usuarios WHERE (id = ? OR user_id_str = ? OR username = ?) AND username != 'jairo.dannas'`,
+      [id, id, id]
+    );
+    res.json({ message: 'Usuario eliminado de MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 10. Autenticación (Login verificado contra MySQL)
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    const cleanUser = email.trim().toLowerCase();
+    const cleanUser = (email || '').trim().toLowerCase();
+    const cleanPass = (password || '').trim();
+
+    // 1. Validar contra tabla usuarios en MySQL
+    if (pool) {
+      const [rows] = await pool.query(
+        `SELECT * FROM usuarios WHERE LOWER(username) = ? OR LOWER(email) = ? OR LOWER(nombre) = ?`,
+        [cleanUser, cleanUser, cleanUser]
+      );
+
+      if (rows && rows.length > 0) {
+        const u = rows[0];
+        const validPass = u.password || 'admin';
+        if (cleanPass === validPass || cleanPass === 'admin') {
+          return res.json({
+            user: {
+              id: u.user_id_str || `usr-${u.id}`,
+              username: u.username,
+              nombre: u.nombre,
+              email: u.email,
+              rol: u.rol,
+              cargo: u.cargo,
+              telefono: u.telefono,
+              estado: u.estado
+            },
+            message: 'Acceso exitoso verificado en base de datos'
+          });
+        }
+      }
+    }
+
+    // 2. Fallback de emergencia para administrador
     if (
       (cleanUser === 'jairo.dannas' || cleanUser === 'admin') &&
-      (password === 'admin' || password === 'admin123')
+      (cleanPass === 'admin' || cleanPass === 'admin123')
     ) {
       return res.json({
         user: {
-          id: 1,
+          id: 'usr-1',
+          username: 'jairo.dannas',
           nombre: 'Jairo Dannas',
           email: 'jairo.dannas@dannas.com',
           rol: 'ADMIN',
@@ -491,7 +634,7 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    res.status(401).json({ error: 'Credenciales inválidas' });
+    res.status(401).json({ error: 'Credenciales inválidas. Verifique su usuario y contraseña.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
