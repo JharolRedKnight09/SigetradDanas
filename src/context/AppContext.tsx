@@ -301,24 +301,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (resUsuarios.ok) {
           const usuariosDb = await resUsuarios.json();
           if (Array.isArray(usuariosDb) && usuariosDb.length > 0) {
-            const usuariosFormateados: User[] = usuariosDb.map((u: any) => ({
-              id: u.user_id_str || `usr-${u.id}`,
-              username: u.username,
-              nombre: u.nombre,
-              email: u.email,
-              telefono: u.telefono || '+502 0000-0000',
-              rol: u.rol as UserRole,
-              cargo: u.cargo || '',
-              password: u.password || 'admin',
-              pilotoId: u.piloto_id || undefined,
-              estado: (u.estado || 'Activo') as 'Activo' | 'Inactivo',
-              fechaCreacion: u.fecha_creacion || '',
-            }));
+            const usuariosFormateados: User[] = usuariosDb
+              .filter((u: any) => u && (u.username || u.nombre))
+              .map((u: any) => ({
+                id: u.user_id_str || `usr-${u.id}`,
+                username: u.username || `usuario.${u.id}`,
+                nombre: u.nombre || 'Usuario',
+                email: u.email || `${u.username || u.id}@dannas.com`,
+                telefono: u.telefono || '+502 0000-0000',
+                rol: (u.rol || 'ADMIN') as UserRole,
+                cargo: u.cargo || '',
+                password: u.password || 'admin',
+                pilotoId: u.piloto_id || undefined,
+                estado: (u.estado || 'Activo') as 'Activo' | 'Inactivo',
+                fechaCreacion: u.fecha_creacion || '',
+              }));
 
             setUsers((prev) => {
-              const idsDb = new Set(usuariosFormateados.map((u) => u.username.toLowerCase()));
+              const idsDb = new Set(
+                usuariosFormateados
+                  .map((u) => (u.username ? u.username.toLowerCase() : ''))
+                  .filter(Boolean)
+              );
               // Mantener usuarios locales que aún no hayan sincronizado pero priorizar DB
-              const localesRestantes = prev.filter((p) => !idsDb.has(p.username.toLowerCase()));
+              const localesRestantes = prev.filter(
+                (p) => p && p.username && !idsDb.has(p.username.toLowerCase())
+              );
               const combinados = [...usuariosFormateados, ...localesRestantes];
               localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(combinados));
               return combinados;
@@ -413,16 +421,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (Array.isArray(pilotosDb) && pilotosDb.length > 0) {
             const pilotosFormateados: Piloto[] = pilotosDb.map((p: any) => ({
               id: `pil-${p.id}`,
-              nombreCompleto: p.nombre_completo || p.nombreCompleto,
-              dpi: p.dpi,
-              licencia: p.licencia,
+              nombreCompleto: p.nombre_completo || p.nombreCompleto || 'Piloto',
+              dpi: p.dpi || '',
+              licencia: p.licencia || '',
               telefono: p.telefono || '',
               tipoLicencia: p.tipo_licencia || p.tipoLicencia || 'A',
               vencimientoLicencia: p.vencimiento_licencia || p.vencimientoLicencia || '2027-12-31',
               estado: p.estado || 'Disponible',
-              tarifaViaje: Number(p.tarifa_viaje || p.tarifaViaje || 350),
+              fechaIngreso: p.fecha_ingreso || '2024-01-15',
               gondolaHabitual: p.gondola_habitual || p.gondolaHabitual || '',
-              activo: Boolean(p.activo ?? true)
             }));
             setPilotos((prev) => {
               const dpisExistentes = new Set(pilotosFormateados.map((p) => p.dpi));
@@ -440,12 +447,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const gondolasFormateadas: Gondola[] = gondolasDb.map((g: any) => ({
               id: `gon-${g.id}`,
               placa: g.placa,
-              propietario: g.propietario,
-              tipo: g.tipo || 'Triaxial Volteo',
-              capacidadToneladas: Number(g.capacidad_toneladas || g.capacidadToneladas || 38),
+              tipoUnidad: g.tipo_unidad || g.tipo || 'Cabezal + Góndola 3 Ejes',
+              capacidadTon: Number(g.capacidad_toneladas || g.capacidadTon || 38),
+              capacidadM3: Number(g.capacidad_m3 || g.capacidadM3 || 28),
+              propietarioId: g.propietario_id || g.propietarioId || 'herm-1',
               estado: g.estado || 'Disponible',
-              kilometrajeActual: Number(g.kilometraje_actual || g.kilometrajeActual || 120000),
-              activo: Boolean(g.activo ?? true)
+              kilometraje: Number(g.kilometraje_actual || g.kilometraje || 120000),
+              anio: Number(g.anio || 2022),
+              observaciones: g.observaciones || undefined,
             }));
             setGondolas((prev) => {
               const placasExistentes = new Set(gondolasFormateadas.map((g) => g.placa));
@@ -886,14 +895,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Autenticación y Usuarios
   const login = (identifier: string, pass: string): { success: boolean; error?: string } => {
-    const cleanId = identifier.trim().toLowerCase();
-    const cleanPass = pass.trim();
+    const cleanId = (identifier || '').trim().toLowerCase();
+    const cleanPass = (pass || '').trim();
 
     const found = users.find(
       (u) =>
-        u.username.toLowerCase() === cleanId ||
-        u.email.toLowerCase() === cleanId ||
-        u.nombre.toLowerCase() === cleanId ||
+        (u.username && u.username.toLowerCase() === cleanId) ||
+        (u.email && u.email.toLowerCase() === cleanId) ||
+        (u.nombre && u.nombre.toLowerCase() === cleanId) ||
         (cleanId === 'admin' && (u.username === 'jairo.dannas' || u.rol === 'ADMIN' || u.rol === 'DUENO')) ||
         (cleanId === 'jairo' && u.username === 'jairo.dannas')
     );
@@ -922,13 +931,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addUser = (userData: Omit<User, 'id'>): { success: boolean; error?: string } => {
-    const cleanUsername = userData.username.trim().toLowerCase();
-    const cleanEmail = userData.email.trim().toLowerCase();
+    const cleanUsername = (userData.username || '').trim().toLowerCase();
+    const cleanEmail = (userData.email || '').trim().toLowerCase();
 
-    if (users.some((u) => u.username.toLowerCase() === cleanUsername)) {
+    if (users.some((u) => (u.username || '').toLowerCase() === cleanUsername)) {
       return { success: false, error: `El nombre de usuario "${userData.username}" ya está registrado.` };
     }
-    if (users.some((u) => u.email.toLowerCase() === cleanEmail)) {
+    if (users.some((u) => (u.email || '').toLowerCase() === cleanEmail)) {
       return { success: false, error: `El correo "${userData.email}" ya está registrado.` };
     }
 

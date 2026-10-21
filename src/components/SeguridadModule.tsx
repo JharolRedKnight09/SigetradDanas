@@ -153,13 +153,13 @@ export const SeguridadModule: React.FC = () => {
   const isCurrentAdmin = currentUser.rol === 'ADMIN' || currentUser.rol === 'DUENO';
 
   const filteredUsers = users.filter((u) => {
-    const q = searchTerm.toLowerCase();
+    const q = (searchTerm || '').toLowerCase();
     return (
-      u.nombre.toLowerCase().includes(q) ||
-      u.username.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.cargo.toLowerCase().includes(q) ||
-      u.rol.toLowerCase().includes(q)
+      (u.nombre || '').toLowerCase().includes(q) ||
+      (u.username || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.cargo || '').toLowerCase().includes(q) ||
+      (u.rol || '').toLowerCase().includes(q)
     );
   });
 
