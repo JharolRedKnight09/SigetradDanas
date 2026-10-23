@@ -235,7 +235,7 @@ export const GondolasModule: React.FC = () => {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-base font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-900 text-white shadow-2xs">
+                      <span className="plate-badge keep-white text-base font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-900 text-white shadow-2xs">
                         {gondola.placa}
                       </span>
                       {getStatusBadge(gondola.estado)}

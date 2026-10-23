@@ -36,7 +36,9 @@
   }
 }
 
-/* LIGHT MODE STYLING FOR CENTRAL PANEL & MODULES */
+/* ========================================================
+   LIGHT MODE STYLING (.theme-light)
+   ======================================================== */
 .theme-light {
   color-scheme: light;
 }
@@ -44,6 +46,24 @@
 .theme-light main,
 .theme-light .main-panel {
   background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+/* Card surfaces and containers in Light Mode */
+.theme-light main div[class*="bg-[#131B26]"],
+.theme-light main div[class*="bg-[#0D131C]"],
+.theme-light main section[class*="bg-[#131B26]"],
+.theme-light main div[class*="bg-slate-900"]:not(.plate-badge):not([class*="font-mono"]) {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.theme-light main div[class*="bg-[#1A2433]"],
+.theme-light main div[class*="bg-slate-950"] {
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
   color: #1E293B !important;
 }
 
@@ -55,27 +75,26 @@
   border-color: #E2E8F0 !important;
 }
 
-/* Central panel card surfaces */
-.theme-light main div[class*="bg-[#131B26]"],
-.theme-light main div[class*="bg-[#0D131C]"],
-.theme-light main div[class*="bg-slate-900"],
-.theme-light main section[class*="bg-[#131B26]"] {
-  background-color: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-  color: #0F172A !important;
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.06) !important;
+/* Light Mode: CRITICAL FIX for dark badges & license plates so text NEVER turns black */
+.theme-light main [class*="bg-slate-900"]:not(div[class*="rounded-xl"]):not(div[class*="rounded-2xl"]),
+.theme-light main [class*="bg-slate-950"]:not(div[class*="rounded-xl"]):not(div[class*="rounded-2xl"]),
+.theme-light main [class*="bg-[#0F172A]"],
+.theme-light main [class*="bg-black"],
+.theme-light main span[class*="bg-slate-900"],
+.theme-light main .plate-badge {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
 }
 
-.theme-light main div[class*="bg-[#1A2433]"],
-.theme-light main div[class*="bg-slate-950"],
-.theme-light main div[class*="bg-slate-900/90"] {
-  background-color: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-  color: #1E293B !important;
+.theme-light main [class*="bg-slate-900"] *,
+.theme-light main span[class*="bg-slate-900"] *,
+.theme-light main .plate-badge *,
+.theme-light main .plate-badge {
+  color: #FFFFFF !important;
 }
 
-/* Light mode text contrast adjustments inside the central panel */
-.theme-light main .text-white:not(.keep-white):not(button *):not([class*="bg-blue"] *):not([class*="from-blue"] *) {
+/* Light mode text contrast adjustments: only turn text-white dark if it's on a plain light surface */
+.theme-light main .text-white:not(.keep-white):not(button *):not([class*="bg-blue"] *):not([class*="bg-[#2563EB]"] *):not([class*="bg-slate-900"] *):not([class*="bg-black"] *):not(span[class*="bg-slate-900"]):not(.plate-badge) {
   color: #0F172A !important;
 }
 
@@ -112,7 +131,7 @@
 }
 
 .theme-light main thead th {
-  background-color: #F1F5F9 !important;
+  background-color: #F8FAFC !important;
   color: #334155 !important;
   border-color: #E2E8F0 !important;
 }
@@ -141,4 +160,137 @@
 .theme-light main input::placeholder,
 .theme-light main textarea::placeholder {
   color: #94A3B8 !important;
+}
+
+
+/* ========================================================
+   DARK MODE STYLING (.theme-dark) - COMPREHENSIVE OVERRIDES
+   ======================================================== */
+.theme-dark {
+  color-scheme: dark;
+}
+
+.theme-dark main,
+.theme-dark .main-panel {
+  background-color: #0B0F17 !important;
+  color: #E2E8F0 !important;
+}
+
+/* Headings and High-Contrast Text in Dark Mode (Fixes invisible dark headers) */
+.theme-dark main h1,
+.theme-dark main h2,
+.theme-dark main h3,
+.theme-dark main h4,
+.theme-dark main .text-slate-900,
+.theme-dark main .text-slate-800,
+.theme-dark main .text-slate-700 {
+  color: #F8FAFC !important;
+}
+
+.theme-dark main .text-slate-600,
+.theme-dark main .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+.theme-dark main .text-slate-400 {
+  color: #CBD5E1 !important;
+}
+
+/* Card surfaces and Containers in Dark Mode (Fixes stark white boxes) */
+.theme-dark main div[class*="bg-white"],
+.theme-dark main section[class*="bg-white"] {
+  background-color: #131B26 !important;
+  border-color: #1E293B !important;
+  color: #E2E8F0 !important;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Secondary boxes & accumulators inside cards (like bg-slate-50, bg-slate-100) */
+.theme-dark main div[class*="bg-slate-50"],
+.theme-dark main div[class*="bg-slate-100"],
+.theme-dark main div[class*="bg-slate-50/70"],
+.theme-dark main div[class*="bg-slate-50/40"] {
+  background-color: #1A2433 !important;
+  border-color: #1E293B !important;
+  color: #E2E8F0 !important;
+}
+
+/* Badges inside dark mode (such as buque tabs or count pills) */
+.theme-dark main span[class*="bg-slate-100"] {
+  background-color: #1E293B !important;
+  color: #94A3B8 !important;
+}
+
+/* Borders in Dark Mode */
+.theme-dark main [class*="border-slate-200"],
+.theme-dark main [class*="border-slate-300"],
+.theme-dark main [class*="border-slate-100"],
+.theme-dark main [class*="border-slate-200/80"],
+.theme-dark main [class*="border-slate-200/60"] {
+  border-color: #1E293B !important;
+}
+
+/* Divider lines in dark mode */
+.theme-dark main div[class*="h-"][class*="w-px"][class*="bg-slate-200"] {
+  background-color: #1E293B !important;
+}
+
+/* Forms & Inputs in Dark Mode */
+.theme-dark main input:not([type="checkbox"]):not([type="radio"]),
+.theme-dark main select,
+.theme-dark main textarea {
+  background-color: #0D131C !important;
+  border-color: #1E293B !important;
+  color: #F8FAFC !important;
+}
+
+.theme-dark main input::placeholder,
+.theme-dark main textarea::placeholder {
+  color: #64748B !important;
+}
+
+/* Tables in Dark Mode */
+.theme-dark main table {
+  background-color: #131B26 !important;
+}
+
+.theme-dark main thead th {
+  background-color: #1A2433 !important;
+  color: #94A3B8 !important;
+  border-color: #1E293B !important;
+}
+
+.theme-dark main tbody tr {
+  border-color: #1E293B !important;
+}
+
+.theme-dark main tbody tr:hover {
+  background-color: rgba(26, 36, 51, 0.6) !important;
+}
+
+.theme-dark main tbody td {
+  color: #E2E8F0 !important;
+  border-color: #1E293B !important;
+}
+
+/* License Plate Badges in Dark Mode (High tech glow and contrast) */
+.theme-dark main span[class*="bg-slate-900"],
+.theme-dark main .plate-badge {
+  background-color: #1A2433 !important;
+  color: #38BDF8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+}
+
+.theme-dark main span[class*="bg-slate-900"] *,
+.theme-dark main .plate-badge * {
+  color: #38BDF8 !important;
+}
+
+/* Navigation tabs in Dark Mode */
+.theme-dark main .border-b-2.border-transparent {
+  color: #94A3B8 !important;
+}
+
+.theme-dark main .border-b-2.border-transparent:hover {
+  color: #F8FAFC !important;
 }
