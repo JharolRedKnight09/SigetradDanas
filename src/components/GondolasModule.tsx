@@ -236,15 +236,24 @@ export const GondolasModule: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <span
-                        className="sigetrad-plate-badge text-base font-mono font-black tracking-wider px-3 py-1 rounded-lg border shadow-xs transition-colors"
+                        className="sigetrad-plate-badge text-base font-mono font-black tracking-wider px-3 py-1 rounded-lg border shadow-xs transition-colors inline-flex items-center gap-1.5"
                         style={{
-                          backgroundColor: theme === 'light' ? '#0F172A' : '#1A2433',
-                          color: theme === 'light' ? '#FFFFFF' : '#38BDF8',
-                          borderColor: theme === 'light' ? '#334155' : 'rgba(56, 189, 248, 0.4)',
-                          boxShadow: theme === 'dark' ? '0 0 10px rgba(56, 189, 248, 0.15)' : 'none',
+                          backgroundColor: theme === 'light' ? '#FFFFFF' : '#1A2433',
+                          color: theme === 'light' ? '#0F172A' : '#38BDF8',
+                          borderColor: theme === 'light' ? '#94A3B8' : 'rgba(56, 189, 248, 0.4)',
+                          boxShadow: theme === 'light' ? '0 1px 3px rgba(0,0,0,0.08)' : '0 0 10px rgba(56, 189, 248, 0.15)',
                         }}
                       >
-                        {gondola.placa}
+                        <span
+                          className="text-[10px] font-sans font-extrabold px-1 py-0.5 rounded"
+                          style={{
+                            backgroundColor: theme === 'light' ? '#E0F2FE' : 'rgba(56, 189, 248, 0.2)',
+                            color: theme === 'light' ? '#0369A1' : '#38BDF8',
+                          }}
+                        >
+                          GT
+                        </span>
+                        <span>{gondola.placa}</span>
                       </span>
                       {getStatusBadge(gondola.estado)}
                     </div>

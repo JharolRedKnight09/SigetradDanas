@@ -52,14 +52,15 @@
 
 .theme-light .sigetrad-plate-badge,
 .theme-light .plate-badge {
-  background-color: #0F172A !important;
-  color: #FFFFFF !important;
-  border: 1px solid #334155 !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1.5px solid #94A3B8 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08) !important;
 }
 
 .theme-light .sigetrad-plate-badge *,
 .theme-light .plate-badge * {
-  color: #FFFFFF !important;
+  color: #0F172A !important;
 }
 
 .theme-dark .sigetrad-plate-badge,
