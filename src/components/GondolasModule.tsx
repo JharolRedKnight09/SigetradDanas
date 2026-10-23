@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export const GondolasModule: React.FC = () => {
-  const { gondolas, addGondola, updateGondola, propietarios, currentUser, viajes, pagos } = useApp();
+  const { gondolas, addGondola, updateGondola, propietarios, currentUser, viajes, pagos, theme } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterOwner, setFilterOwner] = useState<string>('ALL');
   const [showModal, setShowModal] = useState(false);
@@ -235,7 +235,15 @@ export const GondolasModule: React.FC = () => {
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="plate-badge keep-white text-base font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-900 text-white shadow-2xs">
+                      <span
+                        className="sigetrad-plate-badge text-base font-mono font-black tracking-wider px-3 py-1 rounded-lg border shadow-xs transition-colors"
+                        style={{
+                          backgroundColor: theme === 'light' ? '#0F172A' : '#1A2433',
+                          color: theme === 'light' ? '#FFFFFF' : '#38BDF8',
+                          borderColor: theme === 'light' ? '#334155' : 'rgba(56, 189, 248, 0.4)',
+                          boxShadow: theme === 'dark' ? '0 0 10px rgba(56, 189, 248, 0.15)' : 'none',
+                        }}
+                      >
                         {gondola.placa}
                       </span>
                       {getStatusBadge(gondola.estado)}

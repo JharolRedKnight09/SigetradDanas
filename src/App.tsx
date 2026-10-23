@@ -128,7 +128,7 @@ const MainLayout: React.FC = () => {
   return (
     <div
       className={`min-h-screen flex flex-col font-sans antialiased selection:bg-[#2563EB] selection:text-white transition-colors duration-200 ${
-        theme === 'light' ? 'theme-light bg-slate-100 text-slate-900' : 'theme-dark bg-[#0B0F17] text-[#E2E8F0]'
+        theme === 'light' ? 'theme-light bg-slate-100 text-slate-900' : 'theme-dark dark bg-[#0B0F17] text-[#E2E8F0]'
       }`}
     >
       {/* Corporate Top Navbar */}

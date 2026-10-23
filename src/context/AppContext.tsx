@@ -179,6 +179,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('SIGETRAD_THEME', newTheme);
   };
 
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark', 'theme-dark');
+      document.documentElement.classList.remove('theme-light');
+    } else {
+      document.documentElement.classList.add('theme-light');
+      document.documentElement.classList.remove('dark', 'theme-dark');
+    }
+  }, [theme]);
+
   const [propietarios] = useState<PropietarioHermano[]>(PROPIETARIOS_HERMANOS);
 
   const [clientes, setClientes] = useState<Cliente[]>(() => {
