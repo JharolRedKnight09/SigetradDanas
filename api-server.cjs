@@ -458,9 +458,12 @@ app.put('/api/clientes/:id', async (req, res) => {
     const { id } = req.params;
     const cleanId = String(id).replace('cli-', '');
     const { codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal } = req.body;
-    await pool.query(
+    const safeCodigo = String(codigo || '').trim().toUpperCase();
+    const buquesStr = Array.isArray(buques_habituales) ? buques_habituales.join(', ') : (buques_habituales || '');
+
+    const [result] = await pool.query(
       `UPDATE clientes SET 
-         codigo = COALESCE(?, codigo),
+         codigo = COALESCE(NULLIF(?, ''), codigo),
          nombre = COALESCE(?, nombre),
          nit = COALESCE(?, nit),
          direccion = COALESCE(?, direccion),
@@ -469,23 +472,44 @@ app.put('/api/clientes/:id', async (req, res) => {
          es_agente_retenedor = COALESCE(?, es_agente_retenedor),
          buques_habituales = COALESCE(?, buques_habituales),
          contacto_principal = COALESCE(?, contacto_principal)
-       WHERE id = ? OR codigo = ?`,
+       WHERE id = ? OR UPPER(codigo) = ? OR UPPER(codigo) = ?`,
       [
-        codigo,
+        safeCodigo,
         nombre,
         nit,
         direccion,
         telefono,
         correo,
         es_agente_retenedor,
-        Array.isArray(buques_habituales) ? buques_habituales.join(', ') : buques_habituales,
+        buquesStr,
         contacto_principal,
         cleanId,
-        id
+        safeCodigo,
+        String(id).toUpperCase()
       ]
     );
-    res.json({ message: 'Cliente actualizado exitosamente en MySQL' });
+
+    // Si no existía aún en la base de datos, insertarlo
+    if (result.affectedRows === 0 && safeCodigo) {
+      await pool.query(
+        `INSERT INTO clientes (codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           nombre = VALUES(nombre),
+           nit = VALUES(nit),
+           direccion = VALUES(direccion),
+           telefono = VALUES(telefono),
+           correo = VALUES(correo),
+           es_agente_retenedor = VALUES(es_agente_retenedor),
+           buques_habituales = VALUES(buques_habituales),
+           contacto_principal = VALUES(contacto_principal)`,
+        [safeCodigo, nombre || 'Cliente', nit || 'CF', direccion || '', telefono || '', correo || '', es_agente_retenedor ?? true, buquesStr, contacto_principal || '']
+      );
+    }
+
+    res.json({ message: 'Cliente actualizado exitosamente en MySQL', affectedRows: result.affectedRows });
   } catch (err) {
+    console.error('[API PUT /api/clientes Error]:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

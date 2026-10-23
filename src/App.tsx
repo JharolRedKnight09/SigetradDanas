@@ -34,6 +34,14 @@ const TAB_TITLES: Record<ModuleTab, { title: string; section: string }> = {
   seguridad: { title: 'Seguridad y Usuarios', section: 'Gobierno Corporativo' },
 };
 
+const ROLE_PERMITTED_TABS: Record<string, ModuleTab[]> = {
+  ADMIN: ['dashboard', 'clientes', 'pilotos', 'gondolas', 'viajes', 'facturacion', 'pagos', 'reportes', 'seguridad'],
+  DUENO: ['dashboard', 'clientes', 'pilotos', 'gondolas', 'viajes', 'facturacion', 'pagos', 'reportes', 'seguridad'],
+  SUPERVISOR: ['dashboard', 'clientes', 'pilotos', 'gondolas', 'viajes', 'reportes'],
+  OPERADOR: ['dashboard', 'viajes', 'pilotos'],
+  PILOTO: ['dashboard', 'viajes', 'pilotos'],
+};
+
 const MainLayout: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<ModuleTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -46,7 +54,51 @@ const MainLayout: React.FC = () => {
     return <LoginScreen />;
   }
 
+  const allowedTabs = ROLE_PERMITTED_TABS[currentUser.rol] || ['dashboard', 'viajes'];
+  const hasAccess = allowedTabs.includes(currentTab);
+
   const renderModule = () => {
+    if (!hasAccess) {
+      return (
+        <div className="min-h-[380px] flex items-center justify-center p-6">
+          <div className={`max-w-md w-full rounded-3xl p-8 border text-center shadow-xl space-y-4 ${
+            theme === 'light' ? 'bg-white border-slate-200 text-slate-800' : 'bg-[#131B26] border-[#1E293B] text-white'
+          }`}>
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center mx-auto text-2xl font-black">
+              !
+            </div>
+            <div>
+              <h2 className="text-base font-bold">Módulo Restringido por Rol</h2>
+              <span className={`inline-block mt-1 px-3 py-0.5 rounded-full text-xs font-mono font-bold ${
+                theme === 'light' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+              }`}>
+                Rama Activa: {currentUser.rol === 'OPERADOR' || currentUser.rol === 'PILOTO' ? 'Operador / Conductor de Góndola' : currentUser.rol}
+              </span>
+            </div>
+            <p className={`text-xs leading-relaxed ${theme === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>
+              Este módulo contiene información financiera o administrativa reservada. Su cuenta tiene acceso a su terminal de viajes, pesaje en básculas y asignaciones.
+            </p>
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                onClick={() => setCurrentTab('viajes')}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md"
+              >
+                Ir a Operaciones y Básculas
+              </button>
+              <button
+                onClick={() => setCurrentTab('dashboard')}
+                className={`w-full py-2 px-4 rounded-xl text-xs font-semibold cursor-pointer border ${
+                  theme === 'light' ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                }`}
+              >
+                Volver a Panel Principal
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     switch (currentTab) {
       case 'dashboard':
         return <Dashboard onNavigate={(tab) => setCurrentTab(tab)} />;

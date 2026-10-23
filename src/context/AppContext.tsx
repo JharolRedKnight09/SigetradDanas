@@ -95,7 +95,7 @@ interface AppContextType {
 
   // Autenticación y Gestión de Usuarios
   isAuthenticated: boolean;
-  login: (identifier: string, pass: string) => { success: boolean; error?: string };
+  login: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   addUser: (userData: Omit<User, 'id'>) => { success: boolean; error?: string };
   updateUser: (id: string, userData: Partial<User>) => void;
@@ -670,10 +670,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateCliente = async (id: string, clienteData: Partial<Cliente>) => {
-    setClientes((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...clienteData } : c))
-    );
-    logAccion('Clientes', 'Actualización de Cliente', `Se modificó la información del cliente ID: ${id}`);
+    setClientes((prev) => {
+      const actualizado = prev.map((c) =>
+        c.id === id || (clienteData.codigo && (c.codigo || '').toUpperCase() === clienteData.codigo.toUpperCase())
+          ? { ...c, ...clienteData }
+          : c
+      );
+      localStorage.setItem(`${STORAGE_KEY}_clientes`, JSON.stringify(actualizado));
+      return actualizado;
+    });
+    logAccion('Clientes', 'Actualización de Cliente', `Se modificó la información del cliente: ${clienteData.nombre || id}`);
 
     // Persistir en MySQL en el servidor
     try {
@@ -682,6 +688,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(clienteData),
       });
+      setTimeout(sincronizarConServidor, 600);
     } catch (e) {
       console.warn('Error al actualizar cliente en MySQL:', e);
     }
@@ -1048,11 +1055,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Autenticación y Usuarios
-  const login = (identifier: string, pass: string): { success: boolean; error?: string } => {
+  const login = async (identifier: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     const cleanId = (identifier || '').trim().toLowerCase();
     const cleanPass = (pass || '').trim();
 
-    const found = users.find(
+    // 1. Buscar en usuarios en memoria de React
+    let found = users.find(
       (u) =>
         (u.username && u.username.toLowerCase() === cleanId) ||
         (u.email && u.email.toLowerCase() === cleanId) ||
@@ -1061,13 +1069,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         (cleanId === 'jairo' && u.username === 'jairo.dannas')
     );
 
+    // 2. Si no está en memoria, buscar en localStorage
     if (!found) {
-      return { success: false, error: 'Usuario no encontrado en el sistema. Verifique e intente nuevamente.' };
+      try {
+        const rawLocalUsers = localStorage.getItem(`${STORAGE_KEY}_users`);
+        if (rawLocalUsers) {
+          const parsed: User[] = JSON.parse(rawLocalUsers);
+          found = parsed.find(
+            (u) =>
+              (u.username && u.username.toLowerCase() === cleanId) ||
+              (u.email && u.email.toLowerCase() === cleanId) ||
+              (u.nombre && u.nombre.toLowerCase() === cleanId)
+          );
+        }
+      } catch (e) {}
+    }
+
+    // 3. Si aún no está, validar directamente contra MySQL (/api/auth/login)
+    if (!found) {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanId, password: cleanPass })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.user) {
+            found = {
+              id: data.user.id || `usr-${Date.now()}`,
+              username: data.user.username,
+              nombre: data.user.nombre,
+              email: data.user.email,
+              telefono: data.user.telefono || '+502 0000-0000',
+              rol: (data.user.rol || 'ADMIN') as UserRole,
+              cargo: data.user.cargo || 'Usuario',
+              password: cleanPass,
+              estado: data.user.estado || 'Activo',
+              pilotoId: data.user.piloto_id || data.user.pilotoId,
+            };
+            setUsers((prev) => {
+              const updated = [found!, ...prev.filter((u) => u.username.toLowerCase() !== found!.username.toLowerCase())];
+              localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(updated));
+              return updated;
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Consulta directa de login falló:', err);
+      }
+    }
+
+    if (!found) {
+      return { success: false, error: 'Usuario no encontrado en el sistema. Verifique su nombre de usuario e intente nuevamente.' };
     }
 
     const validPassword = found.password || 'admin';
     if (cleanPass !== validPassword && cleanPass !== 'admin') {
       return { success: false, error: 'Contraseña incorrecta. Verifique e intente de nuevo.' };
+    }
+
+    if (found.estado === 'Inactivo') {
+      return { success: false, error: 'Esta cuenta de usuario se encuentra suspendida o inactiva.' };
     }
 
     setCurrentUser(found);

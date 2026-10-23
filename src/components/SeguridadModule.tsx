@@ -593,19 +593,19 @@ export const SeguridadModule: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {auditoriaLogs.slice(0, 20).map((log) => (
+                {auditoriaLogs.slice(0, 20).map((log: any) => (
                   <tr key={log.id} className="hover:bg-slate-50/70">
-                    <td className="px-4 py-3 font-mono text-slate-500 text-[11px]">{log.fechaHora}</td>
-                    <td className="px-4 py-3 font-bold text-slate-900">{log.usuarioNombre}</td>
+                    <td className="px-4 py-3 font-mono text-slate-500 text-[11px]">{log.fecha || log.fechaHora}</td>
+                    <td className="px-4 py-3 font-bold text-slate-900">{log.usuario || log.usuarioNombre}</td>
                     <td className="px-4 py-3">
                       <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                        {log.usuarioRol === 'DUENO' ? 'ADMIN' : log.usuarioRol}
+                        {log.usuarioRol || 'SISTEMA'}
                       </span>
                     </td>
                     <td className="px-4 py-3 font-semibold text-blue-700">{log.modulo}</td>
                     <td className="px-4 py-3 font-medium text-slate-800">{log.accion}</td>
-                    <td className="px-4 py-3 text-slate-500 text-[11px] max-w-md truncate" title={log.detalles}>
-                      {log.detalles}
+                    <td className="px-4 py-3 text-slate-500 text-[11px] max-w-md truncate" title={log.detalle || log.detalles}>
+                      {log.detalle || log.detalles}
                     </td>
                   </tr>
                 ))}
@@ -781,7 +781,7 @@ export const SeguridadModule: React.FC = () => {
                     <option value="">-- Sin vincular directamente --</option>
                     {pilotos.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.nombre} ({p.alias}) • Lic. {p.tipoLicencia}
+                        {p.nombreCompleto} • Lic. {p.tipoLicencia} • {p.gondolaHabitual || 'Sin unidad fija'}
                       </option>
                     ))}
                   </select>

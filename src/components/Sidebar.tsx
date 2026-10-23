@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
           label: 'Seguridad y Usuarios',
           sublabel: 'Control de Acceso y Bitácora',
           icon: ShieldCheck,
-          roles: ['ADMIN', 'DUENO', 'SUPERVISOR'],
+          roles: ['ADMIN', 'DUENO'],
         },
       ],
     },
@@ -176,7 +176,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
           <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-400">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>
-              Terminal Operativa
+              {currentUser.rol === 'OPERADOR' || currentUser.rol === 'PILOTO'
+                ? 'Rama Conductor / Básculas'
+                : currentUser.rol === 'SUPERVISOR'
+                ? 'Rama Supervisión Muelle'
+                : 'Rama Gerencia General'}
             </span>
             <span className="text-[#10B981] font-bold bg-[#10B981]/15 px-1.5 py-0.2 rounded border border-[#10B981]/30">
               En Línea
@@ -184,9 +188,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
           </div>
           <div className="mt-1.5 flex items-center justify-between text-xs">
             <span className={`font-bold truncate ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
-              {currentUser.cargo}
+              {currentUser.cargo || currentUser.nombre}
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#1A2433] text-[#38BDF8] border border-blue-500/30 font-semibold">
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold border ${
+              currentUser.rol === 'ADMIN' || currentUser.rol === 'DUENO'
+                ? 'bg-blue-500/20 text-[#38BDF8] border-blue-500/30'
+                : currentUser.rol === 'SUPERVISOR'
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+            }`}>
               {currentUser.rol === 'DUENO' ? 'ADMIN' : currentUser.rol}
             </span>
           </div>
@@ -194,167 +204,185 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab, isOpe
 
         {/* Categorized Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
-          {sections.map((sec, secIdx) => (
-            <div key={secIdx} className="space-y-1">
-              <div className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                {sec.title}
-              </div>
+          {sections.map((sec, secIdx) => {
+            // Filter items by role
+            const visibleItems = sec.items.filter((item) => item.roles.includes(currentUser.rol));
+            if (visibleItems.length === 0) return null;
 
-              <div className="space-y-0.5">
-                {sec.items.map((item) => {
-                  const hasAccess = item.roles.includes(currentUser.rol);
-                  const isSelected = currentTab === item.id;
-                  const Icon = item.icon;
+            return (
+              <div key={secIdx} className="space-y-1">
+                <div className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  {sec.title}
+                </div>
 
-                  return (
-                    <button
-                      key={item.id}
-                      disabled={!hasAccess}
-                      onClick={() => {
-                        if (hasAccess) {
+                <div className="space-y-0.5">
+                  {visibleItems.map((item) => {
+                    const isSelected = currentTab === item.id;
+                    const Icon = item.icon;
+
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
                           onSelectTab(item.id);
                           onClose();
-                        }
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-all duration-150 group ${
-                        isSelected
-                          ? 'bg-[#2563EB] text-white font-bold shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                          : hasAccess
-                          ? theme === 'light'
-                            ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950 cursor-pointer'
-                            : 'hover:bg-[#131B26] text-slate-300 hover:text-white cursor-pointer'
-                          : 'opacity-40 cursor-not-allowed text-slate-500'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            isSelected
-                              ? 'bg-white/20 text-white'
-                              : hasAccess
-                              ? theme === 'light'
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-all duration-150 group cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#2563EB] text-white font-bold shadow-[0_0_20px_rgba(37,99,235,0.4)]'
+                            : theme === 'light'
+                            ? 'hover:bg-slate-100 text-slate-700 hover:text-slate-950'
+                            : 'hover:bg-[#131B26] text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              isSelected
+                                ? 'bg-white/20 text-white'
+                                : theme === 'light'
                                 ? 'bg-slate-100 border border-slate-200 text-slate-600 group-hover:text-blue-600'
                                 : 'bg-[#131B26] border border-[#1E293B] text-slate-400 group-hover:text-[#38BDF8] group-hover:border-blue-500/30'
-                              : 'bg-slate-800/40 text-slate-500 border border-transparent'
-                          }`}
-                        >
-                          <Icon className="w-3.5 h-3.5 shrink-0" />
-                        </div>
-                        <div className="truncate">
-                          <div
-                            className={`text-xs font-semibold leading-tight ${
-                              isSelected
-                                ? 'text-white'
-                                : theme === 'light'
-                                ? 'text-slate-800 group-hover:text-slate-950'
-                                : 'text-slate-100 group-hover:text-white'
                             }`}
                           >
-                            {item.label}
+                            <Icon className="w-3.5 h-3.5 shrink-0" />
                           </div>
-                          <div
-                            className={`text-[10px] truncate ${
-                              isSelected
-                                ? 'text-blue-100 font-medium'
-                                : theme === 'light'
-                                ? 'text-slate-500'
-                                : 'text-slate-400'
-                            }`}
-                          >
-                            {item.sublabel}
+                          <div className="truncate">
+                            <div
+                              className={`text-xs font-semibold leading-tight ${
+                                isSelected
+                                  ? 'text-white'
+                                  : theme === 'light'
+                                  ? 'text-slate-800 group-hover:text-slate-950'
+                                  : 'text-slate-100 group-hover:text-white'
+                              }`}
+                            >
+                              {item.label}
+                            </div>
+                            <div
+                              className={`text-[10px] truncate ${
+                                isSelected
+                                  ? 'text-blue-100 font-medium'
+                                  : theme === 'light'
+                                  ? 'text-slate-500'
+                                  : 'text-slate-400'
+                              }`}
+                            >
+                              {item.sublabel}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                        {!hasAccess && <Lock className="w-3 h-3 text-slate-400" />}
-                        {item.badge && hasAccess && (
-                          <span
-                            className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full text-white shadow-xs ${
-                              isSelected ? 'bg-white text-blue-700' : item.badgeColor || 'bg-slate-700'
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                        <div className="flex items-center gap-1.5 shrink-0 ml-1">
+                          {item.badge && (
+                            <span
+                              className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full text-white shadow-xs ${
+                                isSelected ? 'bg-white text-blue-700' : item.badgeColor || 'bg-slate-700'
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
 
-        {/* Corporate 3 Brothers Accounts Summary Card */}
-        <div
-          className={`p-3.5 m-3 rounded-2xl border text-xs space-y-2.5 transition-colors ${
-            theme === 'light'
-              ? 'bg-slate-50 border-slate-200 text-slate-700 shadow-xs'
-              : 'bg-gradient-to-b from-slate-900/90 to-slate-950 border-slate-800/80 text-slate-300 shadow-sm'
-          }`}
-        >
-          <div className="flex items-center justify-between font-bold text-[10px] text-slate-400 uppercase tracking-wider">
-            <span className="flex items-center gap-1.5">
-              <CreditCard className="w-3.5 h-3.5 text-blue-500" />
-              Cuentas 3 Hermanos Dannas
-            </span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          </div>
-
-          <div className="space-y-1.5 text-[11px]">
-            <div
-              className={`flex items-center justify-between p-1 rounded-lg border ${
-                theme === 'light'
-                  ? 'bg-white border-slate-200'
-                  : 'bg-slate-950/60 border-slate-800/50'
-              }`}
-            >
-              <span className={`font-medium pl-1 ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
-                Jairo Dannas
-              </span>
-              <span className="text-emerald-500 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
-                Banrural
-              </span>
-            </div>
-            <div
-              className={`flex items-center justify-between p-1 rounded-lg border ${
-                theme === 'light'
-                  ? 'bg-white border-slate-200'
-                  : 'bg-slate-950/60 border-slate-800/50'
-              }`}
-            >
-              <span className={`font-medium pl-1 ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
-                Carlos Dannas
-              </span>
-              <span className="text-blue-500 font-mono text-[10px] bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/20">
-                Banco Ind.
-              </span>
-            </div>
-            <div
-              className={`flex items-center justify-between p-1 rounded-lg border ${
-                theme === 'light'
-                  ? 'bg-white border-slate-200'
-                  : 'bg-slate-950/60 border-slate-800/50'
-              }`}
-            >
-              <span className={`font-medium pl-1 ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
-                Edwin Dannas
-              </span>
-              <span className="text-amber-500 font-mono text-[10px] bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">
-                G&T Cont.
-              </span>
-            </div>
-          </div>
-
+        {/* Corporate 3 Brothers Accounts Summary Card (ADMIN ONLY) */}
+        {(currentUser.rol === 'ADMIN' || currentUser.rol === 'DUENO') ? (
           <div
-            className={`pt-1.5 border-t text-[9px] leading-tight ${
-              theme === 'light' ? 'border-slate-200 text-slate-500' : 'border-slate-800 text-slate-500'
+            className={`p-3.5 m-3 rounded-2xl border text-xs space-y-2.5 transition-colors ${
+              theme === 'light'
+                ? 'bg-slate-50 border-slate-200 text-slate-700 shadow-xs'
+                : 'bg-gradient-to-b from-slate-900/90 to-slate-950 border-slate-800/80 text-slate-300 shadow-sm'
             }`}
           >
-            Distribución automática según número de placa asignada a cada hermano.
+            <div className="flex items-center justify-between font-bold text-[10px] text-slate-400 uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5 text-blue-500" />
+                Cuentas 3 Hermanos Dannas
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+
+            <div className="space-y-1.5 text-[11px]">
+              <div
+                className={`flex items-center justify-between p-1 rounded-lg border ${
+                  theme === 'light'
+                    ? 'bg-white border-slate-200'
+                    : 'bg-slate-950/60 border-slate-800/50'
+                }`}
+              >
+                <span className={`font-medium pl-1 ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
+                  Jairo Dannas
+                </span>
+                <span className="text-emerald-500 font-mono text-[10px] bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
+                  Banrural
+                </span>
+              </div>
+              <div
+                className={`flex items-center justify-between p-1 rounded-lg border ${
+                  theme === 'light'
+                    ? 'bg-white border-slate-200'
+                    : 'bg-slate-950/60 border-slate-800/50'
+                }`}
+              >
+                <span className={`font-medium pl-1 ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
+                  Carlos Dannas
+                </span>
+                <span className="text-blue-500 font-mono text-[10px] bg-blue-500/10 px-1.5 py-0.2 rounded border border-blue-500/20">
+                  Banco Ind.
+                </span>
+              </div>
+              <div
+                className={`flex items-center justify-between p-1 rounded-lg border ${
+                  theme === 'light'
+                    ? 'bg-white border-slate-200'
+                    : 'bg-slate-950/60 border-slate-800/50'
+                }`}
+              >
+                <span className={`font-medium pl-1 ${theme === 'light' ? 'text-slate-800' : 'text-slate-200'}`}>
+                  Edwin Dannas
+                </span>
+                <span className="text-amber-500 font-mono text-[10px] bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">
+                  G&T Cont.
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={`pt-1.5 border-t text-[9px] leading-tight ${
+                theme === 'light' ? 'border-slate-200 text-slate-500' : 'border-slate-800 text-slate-500'
+              }`}
+            >
+              Distribución automática según número de placa asignada a cada hermano.
+            </div>
           </div>
-        </div>
+        ) : (
+          <div
+            className={`p-3.5 m-3 rounded-2xl border text-xs space-y-2 transition-colors ${
+              theme === 'light'
+                ? 'bg-blue-50/70 border-blue-200 text-slate-700'
+                : 'bg-[#131B26] border-blue-500/30 text-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between font-bold text-[10px] text-blue-600 dark:text-[#38BDF8] uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <Truck className="w-3.5 h-3.5 text-blue-500" />
+                Terminal Conductor / Móvil
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+            <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+              Sesión activa de {currentUser.nombre}. Puede capturar boletas de báscula en muelle puerto y silos para sus viajes.
+            </p>
+          </div>
+        )}
       </aside>
     </>
   );

@@ -25,18 +25,21 @@ export const LoginScreen: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setLoading(true);
 
-    setTimeout(() => {
-      const result = login(identifier.trim(), password);
+    try {
+      const result = await login(identifier.trim(), password);
       if (!result.success) {
         setErrorMsg(result.error || 'Credenciales incorrectas. Verifique e intente de nuevo.');
         setLoading(false);
       }
-    }, 250);
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Error al conectar con el servidor.');
+      setLoading(false);
+    }
   };
 
   return (
