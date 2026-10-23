@@ -12,14 +12,14 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
 
 // Configuración de Conexión a Base de Datos MySQL
 const dbConfig = {
-  host: process.env.DB_HOST || null,
+  host: process.env.DB_HOST || '127.0.0.1',
   user: process.env.DB_USER || 'sigetrad_user',
   password: process.env.DB_PASSWORD || 'Sigetrad2026Secure!',
   database: process.env.DB_NAME || 'sigetrad_db',
@@ -269,18 +269,48 @@ async function initDatabase() {
     await safeAddColumn('pilotos', 'gondola_habitual', "VARCHAR(20) DEFAULT ''");
     await safeAddColumn('pilotos', 'activo', 'BOOLEAN DEFAULT TRUE');
 
-    await safeAddColumn('gondolas', 'propietario', "VARCHAR(50) DEFAULT 'Jairo Dannas'");
-    await safeAddColumn('gondolas', 'tipo', "VARCHAR(50) DEFAULT 'Triaxial Volteo'");
+    // 4. Góndolas - Migración segura de columnas
+    await safeAddColumn('gondolas', 'placa', "VARCHAR(30) NOT NULL DEFAULT ''");
+    await safeAddColumn('gondolas', 'numero_placa', "VARCHAR(30) DEFAULT ''");
+    await safeAddColumn('gondolas', 'propietario', "VARCHAR(100) DEFAULT 'Jairo Dannas'");
+    await safeAddColumn('gondolas', 'tipo', "VARCHAR(100) DEFAULT 'Triaxial Volteo'");
     await safeAddColumn('gondolas', 'capacidad_toneladas', 'DECIMAL(8,2) DEFAULT 38.00');
     await safeAddColumn('gondolas', 'capacidad_m3', 'DECIMAL(8,2) DEFAULT 28.00');
-    await safeAddColumn('gondolas', 'estado', "VARCHAR(30) DEFAULT 'Disponible'");
+    await safeAddColumn('gondolas', 'estado', "VARCHAR(50) DEFAULT 'Disponible'");
     await safeAddColumn('gondolas', 'kilometraje_actual', 'INT DEFAULT 120000');
     await safeAddColumn('gondolas', 'anio', 'INT DEFAULT 2022');
     await safeAddColumn('gondolas', 'observaciones', 'TEXT');
     await safeAddColumn('gondolas', 'activo', 'BOOLEAN DEFAULT TRUE');
 
+    await safeModifyColumn('gondolas', 'placa', "VARCHAR(30) NULL DEFAULT ''");
+    await safeModifyColumn('gondolas', 'propietario', "VARCHAR(100) NULL DEFAULT 'Jairo Dannas'");
+    await safeModifyColumn('gondolas', 'tipo', "VARCHAR(100) NULL DEFAULT 'Triaxial Volteo'");
+    await safeModifyColumn('gondolas', 'capacidad_toneladas', "DECIMAL(8,2) NULL DEFAULT 38.00");
+    await safeModifyColumn('gondolas', 'estado', "VARCHAR(50) NULL DEFAULT 'Disponible'");
+    await safeModifyColumn('gondolas', 'kilometraje_actual', "INT NULL DEFAULT 120000");
+
+    try {
+      await pool.query("UPDATE gondolas SET placa = numero_placa WHERE (placa IS NULL OR placa = '') AND (numero_placa IS NOT NULL AND numero_placa != '')");
+    } catch (e) {}
+    try {
+      await pool.query("UPDATE gondolas SET numero_placa = placa WHERE (numero_placa IS NULL OR numero_placa = '') AND (placa IS NOT NULL AND placa != '')");
+    } catch (e) {}
+
+    // 5. Viajes - Migración segura de columnas
+    await safeAddColumn('viajes', 'codigo_viaje', "VARCHAR(40) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'cliente_id', "VARCHAR(50) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'cliente_nombre', "VARCHAR(150) NOT NULL DEFAULT ''");
     await safeAddColumn('viajes', 'categoria_movimiento', "VARCHAR(80) DEFAULT 'Buques'");
     await safeAddColumn('viajes', 'material', "VARCHAR(80) DEFAULT 'Carbón'");
+    await safeAddColumn('viajes', 'gondola_id', "VARCHAR(50) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'placa', "VARCHAR(30) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'piloto_id', "VARCHAR(50) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'piloto_nombre', "VARCHAR(150) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'origen', "VARCHAR(100) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'destino', "VARCHAR(100) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'fecha_salida', "VARCHAR(50) NOT NULL DEFAULT ''");
+    await safeAddColumn('viajes', 'fecha_llegada', "VARCHAR(50) DEFAULT ''");
+    await safeAddColumn('viajes', 'estado', "VARCHAR(50) DEFAULT 'En Curso'");
     await safeAddColumn('viajes', 'buque_nombre', "VARCHAR(80) DEFAULT ''");
     await safeAddColumn('viajes', 'propietario_hermano_id', "VARCHAR(50) DEFAULT 'herm-1'");
     await safeAddColumn('viajes', 'tarifa_acordada', 'DECIMAL(10,2) DEFAULT 0.00');
@@ -294,6 +324,7 @@ async function initDatabase() {
     await safeAddColumn('viajes', 'peso_neto_destino', 'DECIMAL(10,2) DEFAULT 0.00');
     await safeAddColumn('viajes', 'ticket_destino', 'VARCHAR(50)');
 
+    // 6. Facturas & Pagos - Migración segura
     await safeAddColumn('facturas', 'es_agente_retenedor', 'BOOLEAN DEFAULT TRUE');
     await safeAddColumn('facturas', 'retencion_isr_estimada', 'DECIMAL(12,2) DEFAULT 0.00');
     await safeAddColumn('facturas', 'retencion_iva_estimada', 'DECIMAL(12,2) DEFAULT 0.00');
@@ -302,64 +333,78 @@ async function initDatabase() {
 
     try {
       await pool.query('ALTER TABLE clientes ADD UNIQUE KEY uq_cliente_codigo (codigo)');
-    } catch (e) {
-      // Ignorar si el índice único ya existe
-    }
+    } catch (e) {}
 
     // Sembrar usuario inicial jairo.dannas si la tabla está vacía
-    const [userCount] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
-    if (userCount && userCount[0].count === 0) {
-      await pool.query(`
-        INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, password_hash, estado, fecha_creacion)
-        VALUES ('usr-1', 'jairo.dannas', 'Jairo Dannas', 'jairo.dannas@dannas.com', '+502 5555-0100', 'ADMIN', 'Gerente General y Propietario', 'admin', '', 'Activo', CURDATE())
-      `);
-      console.log('[MySQL] Usuario principal jairo.dannas inicializado en base de datos.');
+    try {
+      const [userCount] = await pool.query('SELECT COUNT(*) as count FROM usuarios');
+      if (userCount && userCount[0].count === 0) {
+        await pool.query(`
+          INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, password_hash, estado, fecha_creacion)
+          VALUES ('usr-1', 'jairo.dannas', 'Jairo Dannas', 'jairo.dannas@dannas.com', '+502 5555-0100', 'ADMIN', 'Gerente General y Propietario', 'admin', '', 'Activo', CURDATE())
+        `);
+        console.log('[MySQL] Usuario principal jairo.dannas inicializado en base de datos.');
+      }
+    } catch (errUser) {
+      console.warn('[MySQL Sembrado Usuarios]:', errUser.message);
     }
 
     // Sembrar clientes base si la tabla está vacía
-    const [clienteCount] = await pool.query('SELECT COUNT(*) as count FROM clientes');
-    if (clienteCount && clienteCount[0].count === 0) {
-      await pool.query(`
-        INSERT INTO clientes (codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal)
-        VALUES 
-        ('CLI-001', 'Corporación Granelera del Atlántico, S.A.', '8492019-3', 'Km 292.5 Carretera al Atlántico, Puerto Barrios, Izabal', '+502 2334-9000', 'logistica@cgranelera.com.gt', TRUE, 'Sofía, Sakura, Barrios', 'Lic. Fernando Morales (Gerente de Tráfico)'),
-        ('CLI-002', 'Importadora y Molinera del Caribe, S.A.', '7192834-5', 'Zona Portuaria Santo Tomás de Castilla, Izabal', '+502 2450-1100', 'cuentasporpagar@molineracaribe.com', TRUE, 'Sofía, Barrios, Trigo', 'Ing. Sandra Valenzuela'),
-        ('CLI-003', 'Cementos y Concretos Mi Guate, S.A.', '9182301-1', 'Calzada Roosevelt 14-22 Zona 11, Guatemala', '+502 2210-4400', 'abastecimiento@miguatedesarrollo.gt', FALSE, 'Clinkers, Mi Guate', 'Ing. Rodrigo Castillo'),
-        ('CLI-004', 'Carbones y Minerales de Centroamérica, S.A.', '6541290-7', 'Puerto Barrios, Terminal de Graneles Sólidos', '+502 7948-2200', 'operaciones@carbonminerales.com', TRUE, 'Carbón Local, Carbón Largo', 'Don Héctor Solórzano'),
-        ('CLI-005', 'Agroindustria Palo Gordo y Cía.', '5102934-2', 'San Antonio Suchitepéquez / Ruta Sur', '+502 7761-9000', 'transporte@palogordo.com.gt', TRUE, 'Palo Gordo, Maíz', 'Lic. Manuel Rivera')
-      `);
-      console.log('[MySQL] Clientes base inicializados en base de datos.');
+    try {
+      const [clienteCount] = await pool.query('SELECT COUNT(*) as count FROM clientes');
+      if (clienteCount && clienteCount[0].count === 0) {
+        await pool.query(`
+          INSERT INTO clientes (codigo, nombre, nit, direccion, telefono, correo, es_agente_retenedor, buques_habituales, contacto_principal)
+          VALUES 
+          ('CLI-001', 'Corporación Granelera del Atlántico, S.A.', '8492019-3', 'Km 292.5 Carretera al Atlántico, Puerto Barrios, Izabal', '+502 2334-9000', 'logistica@cgranelera.com.gt', TRUE, 'Sofía, Sakura, Barrios', 'Lic. Fernando Morales (Gerente de Tráfico)'),
+          ('CLI-002', 'Importadora y Molinera del Caribe, S.A.', '7192834-5', 'Zona Portuaria Santo Tomás de Castilla, Izabal', '+502 2450-1100', 'cuentasporpagar@molineracaribe.com', TRUE, 'Sofía, Barrios, Trigo', 'Ing. Sandra Valenzuela'),
+          ('CLI-003', 'Cementos y Concretos Mi Guate, S.A.', '9182301-1', 'Calzada Roosevelt 14-22 Zona 11, Guatemala', '+502 2210-4400', 'abastecimiento@miguatedesarrollo.gt', FALSE, 'Clinkers, Mi Guate', 'Ing. Rodrigo Castillo'),
+          ('CLI-004', 'Carbones y Minerales de Centroamérica, S.A.', '6541290-7', 'Puerto Barrios, Terminal de Graneles Sólidos', '+502 7948-2200', 'operaciones@carbonminerales.com', TRUE, 'Carbón Local, Carbón Largo', 'Don Héctor Solórzano'),
+          ('CLI-005', 'Agroindustria Palo Gordo y Cía.', '5102934-2', 'San Antonio Suchitepéquez / Ruta Sur', '+502 7761-9000', 'transporte@palogordo.com.gt', TRUE, 'Palo Gordo, Maíz', 'Lic. Manuel Rivera')
+        `);
+        console.log('[MySQL] Clientes base inicializados en base de datos.');
+      }
+    } catch (errCli) {
+      console.warn('[MySQL Sembrado Clientes]:', errCli.message);
     }
 
     // Sembrar pilotos base si la tabla está vacía
-    const [pilotoCount] = await pool.query('SELECT COUNT(*) as count FROM pilotos');
-    if (pilotoCount && pilotoCount[0].count === 0) {
-      await pool.query(`
-        INSERT INTO pilotos (nombre, nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
-        VALUES
-        ('Pedro Ramírez', 'Pedro Ramírez', '2415 88910 1801', 'LIC-A-289104', '+502 3341-9988', 'A', '2027-11-15', 'En Viaje', 350.00, 'C-182BKZ'),
-        ('Juan Choc', 'Juan Choc', '1892 34109 1802', 'LIC-A-177241', '+502 4490-2133', 'A', '2026-08-20', 'En Viaje', 350.00, 'C-293BLX'),
-        ('Carlos Tun', 'Carlos Tun', '2011 55419 1801', 'LIC-A-309122', '+502 5122-8766', 'A', '2028-04-12', 'Disponible', 350.00, 'C-404BMY'),
-        ('Rigoberto Méndez', 'Rigoberto Méndez', '1944 67102 1801', 'LIC-A-199401', '+502 4811-9034', 'A', '2026-12-05', 'Disponible', 350.00, 'C-715BPW'),
-        ('Miguel Morales', 'Miguel Morales', '2289 44109 1803', 'LIC-A-255018', '+502 3012-7744', 'A', '2027-02-18', 'Descanso', 350.00, 'C-906BRT')
-      `);
-      console.log('[MySQL] Pilotos base inicializados en base de datos.');
+    try {
+      const [pilotoCount] = await pool.query('SELECT COUNT(*) as count FROM pilotos');
+      if (pilotoCount && pilotoCount[0].count === 0) {
+        await pool.query(`
+          INSERT INTO pilotos (nombre, nombre_completo, dpi, licencia, telefono, tipo_licencia, vencimiento_licencia, estado, tarifa_viaje, gondola_habitual)
+          VALUES
+          ('Pedro Ramírez', 'Pedro Ramírez', '2415 88910 1801', 'LIC-A-289104', '+502 3341-9988', 'A', '2027-11-15', 'En Viaje', 350.00, 'C-182BKZ'),
+          ('Juan Choc', 'Juan Choc', '1892 34109 1802', 'LIC-A-177241', '+502 4490-2133', 'A', '2026-08-20', 'En Viaje', 350.00, 'C-293BLX'),
+          ('Carlos Tun', 'Carlos Tun', '2011 55419 1801', 'LIC-A-309122', '+502 5122-8766', 'A', '2028-04-12', 'Disponible', 350.00, 'C-404BMY'),
+          ('Rigoberto Méndez', 'Rigoberto Méndez', '1944 67102 1801', 'LIC-A-199401', '+502 4811-9034', 'A', '2026-12-05', 'Disponible', 350.00, 'C-715BPW'),
+          ('Miguel Morales', 'Miguel Morales', '2289 44109 1803', 'LIC-A-255018', '+502 3012-7744', 'A', '2027-02-18', 'Descanso', 350.00, 'C-906BRT')
+        `);
+        console.log('[MySQL] Pilotos base inicializados en base de datos.');
+      }
+    } catch (errPil) {
+      console.warn('[MySQL Sembrado Pilotos]:', errPil.message);
     }
 
     // Sembrar góndolas base si la tabla está vacía
-    const [gondolaCount] = await pool.query('SELECT COUNT(*) as count FROM gondolas');
-    if (gondolaCount && gondolaCount[0].count === 0) {
-      await pool.query(`
-        INSERT INTO gondolas (placa, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
-        VALUES
-        ('C-182BKZ', 'Jairo Dannas', 'Cabezal Freightliner Cascadia + Góndola 3 Ejes', 38.00, 'En Ruta', 145000),
-        ('C-293BLX', 'Jairo Dannas', 'Cabezal Kenworth T680 + Góndola 3 Ejes', 39.50, 'En Ruta', 112000),
-        ('C-404BMY', 'Abner Dannas', 'Cabezal International ProStar + Góndola 3 Ejes', 38.00, 'Disponible', 98000),
-        ('C-715BPW', 'Abner Dannas', 'Cabezal Freightliner Columbia + Góndola 3 Ejes', 36.50, 'Disponible', 185000),
-        ('C-906BRT', 'Edwin Dannas', 'Cabezal Mack Pinnacle + Góndola 3 Ejes', 40.00, 'Disponible', 160000),
-        ('C-337BJS', 'Edwin Dannas', 'Cabezal Volvo VNL + Góndola 3 Ejes', 37.00, 'Mantenimiento', 275000)
-      `);
-      console.log('[MySQL] Góndolas base inicializadas en base de datos.');
+    try {
+      const [gondolaCount] = await pool.query('SELECT COUNT(*) as count FROM gondolas');
+      if (gondolaCount && gondolaCount[0].count === 0) {
+        await pool.query(`
+          INSERT INTO gondolas (placa, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
+          VALUES
+          ('C-182BKZ', 'Jairo Dannas', 'Cabezal Freightliner Cascadia + Góndola 3 Ejes', 38.00, 'En Ruta', 145000),
+          ('C-293BLX', 'Jairo Dannas', 'Cabezal Kenworth T680 + Góndola 3 Ejes', 39.50, 'En Ruta', 112000),
+          ('C-404BMY', 'Abner Dannas', 'Cabezal International ProStar + Góndola 3 Ejes', 38.00, 'Disponible', 98000),
+          ('C-715BPW', 'Abner Dannas', 'Cabezal Freightliner Columbia + Góndola 3 Ejes', 36.50, 'Disponible', 185000),
+          ('C-906BRT', 'Edwin Dannas', 'Cabezal Mack Pinnacle + Góndola 3 Ejes', 40.00, 'Disponible', 160000),
+          ('C-337BJS', 'Edwin Dannas', 'Cabezal Volvo VNL + Góndola 3 Ejes', 37.00, 'Mantenimiento', 275000)
+        `);
+        console.log('[MySQL] Góndolas base inicializadas en base de datos.');
+      }
+    } catch (errGon) {
+      console.warn('[MySQL Sembrado Góndolas]:', errGon.message);
     }
 
     console.log('[MySQL] Tablas verificadas e inicializadas en sigetrad_db.');
