@@ -271,6 +271,8 @@ async function initDatabase() {
 
     // 4. Góndolas - Migración segura de columnas
     await safeAddColumn('gondolas', 'placa', "VARCHAR(30) NOT NULL DEFAULT ''");
+    await safeAddColumn('gondolas', 'placa_cabezal', "VARCHAR(30) DEFAULT ''");
+    await safeAddColumn('gondolas', 'placa_gondola', "VARCHAR(30) DEFAULT ''");
     await safeAddColumn('gondolas', 'numero_placa', "VARCHAR(30) DEFAULT ''");
     await safeAddColumn('gondolas', 'propietario', "VARCHAR(100) DEFAULT 'Jairo Dannas'");
     await safeAddColumn('gondolas', 'tipo', "VARCHAR(100) DEFAULT 'Triaxial Volteo'");
@@ -283,12 +285,21 @@ async function initDatabase() {
     await safeAddColumn('gondolas', 'activo', 'BOOLEAN DEFAULT TRUE');
 
     await safeModifyColumn('gondolas', 'placa', "VARCHAR(30) NULL DEFAULT ''");
+    await safeModifyColumn('gondolas', 'placa_cabezal', "VARCHAR(30) NULL DEFAULT ''");
+    await safeModifyColumn('gondolas', 'placa_gondola', "VARCHAR(30) NULL DEFAULT ''");
+    await safeModifyColumn('gondolas', 'numero_placa', "VARCHAR(30) NULL DEFAULT ''");
     await safeModifyColumn('gondolas', 'propietario', "VARCHAR(100) NULL DEFAULT 'Jairo Dannas'");
     await safeModifyColumn('gondolas', 'tipo', "VARCHAR(100) NULL DEFAULT 'Triaxial Volteo'");
     await safeModifyColumn('gondolas', 'capacidad_toneladas', "DECIMAL(8,2) NULL DEFAULT 38.00");
     await safeModifyColumn('gondolas', 'estado', "VARCHAR(50) NULL DEFAULT 'Disponible'");
     await safeModifyColumn('gondolas', 'kilometraje_actual', "INT NULL DEFAULT 120000");
 
+    try {
+      await pool.query("UPDATE gondolas SET placa = placa_cabezal WHERE (placa IS NULL OR placa = '') AND (placa_cabezal IS NOT NULL AND placa_cabezal != '')");
+    } catch (e) {}
+    try {
+      await pool.query("UPDATE gondolas SET placa_cabezal = placa WHERE (placa_cabezal IS NULL OR placa_cabezal = '') AND (placa IS NOT NULL AND placa != '')");
+    } catch (e) {}
     try {
       await pool.query("UPDATE gondolas SET placa = numero_placa WHERE (placa IS NULL OR placa = '') AND (numero_placa IS NOT NULL AND numero_placa != '')");
     } catch (e) {}
@@ -341,9 +352,14 @@ async function initDatabase() {
       if (userCount && userCount[0].count === 0) {
         await pool.query(`
           INSERT INTO usuarios (user_id_str, username, nombre, email, telefono, rol, cargo, password, password_hash, estado, fecha_creacion)
-          VALUES ('usr-1', 'jairo.dannas', 'Jairo Dannas', 'jairo.dannas@dannas.com', '+502 5555-0100', 'ADMIN', 'Gerente General y Propietario', 'admin', '', 'Activo', CURDATE())
+          VALUES ('usr-1', 'jairo.dannas', 'Jairo Dannas', 'jairo.dannas@dannas.com', '+502 5555-0100', 'ADMIN', 'Gerente General y Propietario', 'Dannas2026*', '', 'Activo', CURDATE())
         `);
-        console.log('[MySQL] Usuario principal jairo.dannas inicializado en base de datos.');
+        console.log('[MySQL] Usuario principal jairo.dannas inicializado en base de datos con contraseña Dannas2026*.');
+      } else {
+        // Actualizar contraseña de Jairo si todavía tenía la contraseña inicial 'admin'
+        await pool.query(`
+          UPDATE usuarios SET password = 'Dannas2026*' WHERE username = 'jairo.dannas' AND (password = 'admin' OR password = '' OR password IS NULL)
+        `);
       }
     } catch (errUser) {
       console.warn('[MySQL Sembrado Usuarios]:', errUser.message);
@@ -392,14 +408,14 @@ async function initDatabase() {
       const [gondolaCount] = await pool.query('SELECT COUNT(*) as count FROM gondolas');
       if (gondolaCount && gondolaCount[0].count === 0) {
         await pool.query(`
-          INSERT INTO gondolas (placa, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
+          INSERT INTO gondolas (placa, placa_cabezal, placa_gondola, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
           VALUES
-          ('C-182BKZ', 'Jairo Dannas', 'Cabezal Freightliner Cascadia + Góndola 3 Ejes', 38.00, 'En Ruta', 145000),
-          ('C-293BLX', 'Jairo Dannas', 'Cabezal Kenworth T680 + Góndola 3 Ejes', 39.50, 'En Ruta', 112000),
-          ('C-404BMY', 'Abner Dannas', 'Cabezal International ProStar + Góndola 3 Ejes', 38.00, 'Disponible', 98000),
-          ('C-715BPW', 'Abner Dannas', 'Cabezal Freightliner Columbia + Góndola 3 Ejes', 36.50, 'Disponible', 185000),
-          ('C-906BRT', 'Edwin Dannas', 'Cabezal Mack Pinnacle + Góndola 3 Ejes', 40.00, 'Disponible', 160000),
-          ('C-337BJS', 'Edwin Dannas', 'Cabezal Volvo VNL + Góndola 3 Ejes', 37.00, 'Mantenimiento', 275000)
+          ('C-182BKZ', 'C-182BKZ', 'TC-01DAN', 'Jairo Dannas', 'Cabezal Freightliner Cascadia + Góndola 3 Ejes', 38.00, 'En Ruta', 145000),
+          ('C-293BLX', 'C-293BLX', 'TC-02DAN', 'Jairo Dannas', 'Cabezal Kenworth T680 + Góndola 3 Ejes', 39.50, 'En Ruta', 112000),
+          ('C-404BMY', 'C-404BMY', 'TC-03DAN', 'Abner Dannas', 'Cabezal International ProStar + Góndola 3 Ejes', 38.00, 'Disponible', 98000),
+          ('C-715BPW', 'C-715BPW', 'TC-04DAN', 'Abner Dannas', 'Cabezal Freightliner Columbia + Góndola 3 Ejes', 36.50, 'Disponible', 185000),
+          ('C-906BRT', 'C-906BRT', 'TC-05DAN', 'Edwin Dannas', 'Cabezal Mack Pinnacle + Góndola 3 Ejes', 40.00, 'Disponible', 160000),
+          ('C-337BJS', 'C-337BJS', 'TC-06DAN', 'Edwin Dannas', 'Cabezal Volvo VNL + Góndola 3 Ejes', 37.00, 'Mantenimiento', 275000)
         `);
         console.log('[MySQL] Góndolas base inicializadas en base de datos.');
       }
@@ -731,17 +747,22 @@ app.get('/api/gondolas', async (req, res) => {
 app.post('/api/gondolas', async (req, res) => {
   try {
     const g = req.body;
+    const safePlaca = g.placa || g.placa_cabezal || g.numero_placa || 'C-000XXX';
     const [result] = await pool.query(
-      `INSERT INTO gondolas (placa, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO gondolas (placa, placa_cabezal, placa_gondola, propietario, tipo, capacidad_toneladas, estado, kilometraje_actual)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
+         placa_cabezal = VALUES(placa_cabezal),
+         placa_gondola = VALUES(placa_gondola),
          propietario = VALUES(propietario),
          tipo = VALUES(tipo),
          capacidad_toneladas = VALUES(capacidad_toneladas),
          estado = VALUES(estado),
          kilometraje_actual = VALUES(kilometraje_actual)`,
       [
-        g.placa,
+        safePlaca,
+        g.placa_cabezal || safePlaca,
+        g.placa_gondola || 'TC-00DAN',
         g.propietario || g.propietarioId || 'Jairo Dannas',
         g.tipo || g.tipoUnidad || 'Triaxial Volteo',
         g.capacidadToneladas || g.capacidadTon || 38.00,
@@ -983,8 +1004,8 @@ app.post('/api/auth/login', async (req, res) => {
 
       if (rows && rows.length > 0) {
         const u = rows[0];
-        const validPass = u.password || 'admin';
-        if (cleanPass === validPass || cleanPass === 'admin') {
+        const validPass = u.password || (u.username === 'jairo.dannas' ? 'Dannas2026*' : '');
+        if (cleanPass === validPass) {
           return res.json({
             user: {
               id: u.user_id_str || `usr-${u.id}`,
@@ -1002,19 +1023,19 @@ app.post('/api/auth/login', async (req, res) => {
       }
     }
 
-    // 2. Fallback de emergencia para administrador
+    // 2. Fallback de emergencia para administrador Jairo Dannas
     if (
       (cleanUser === 'jairo.dannas' || cleanUser === 'admin') &&
-      (cleanPass === 'admin' || cleanPass === 'admin123')
+      cleanPass === 'Dannas2026*'
     ) {
       return res.json({
         user: {
           id: 'usr-1',
           username: 'jairo.dannas',
           nombre: 'Jairo Dannas',
-          email: 'jairo.dannas@dannas.com',
+          email: 'jairo@transportesdannas.gt',
           rol: 'ADMIN',
-          cargo: 'Gerente General y Propietario',
+          cargo: 'Administrador / Gerente General',
         },
         message: 'Acceso corporativo exitoso',
       });

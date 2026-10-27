@@ -49,11 +49,15 @@ export const SeguridadModule: React.FC = () => {
   const [formUsername, setFormUsername] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formTelefono, setFormTelefono] = useState('');
-  const [formRol, setFormRol] = useState<UserRole>('ADMIN');
+  const [formRol, setFormRol] = useState<UserRole>('OPERADOR');
   const [formCargo, setFormCargo] = useState('');
-  const [formPassword, setFormPassword] = useState('admin');
+  const [formPassword, setFormPassword] = useState('');
   const [formPilotoId, setFormPilotoId] = useState('');
   const [formEstado, setFormEstado] = useState<'Activo' | 'Inactivo'>('Activo');
+
+  // Quick Password Change Modal
+  const [passwordModalUser, setPasswordModalUser] = useState<User | null>(null);
+  const [quickNewPassword, setQuickNewPassword] = useState('');
 
   const openCreateModal = () => {
     setEditingUser(null);
@@ -61,9 +65,9 @@ export const SeguridadModule: React.FC = () => {
     setFormUsername('');
     setFormEmail('');
     setFormTelefono('+502 ');
-    setFormRol('ADMIN');
-    setFormCargo('Administrador Operativo');
-    setFormPassword('admin');
+    setFormRol('OPERADOR');
+    setFormCargo('Operador de Góndola');
+    setFormPassword('');
     setFormPilotoId('');
     setFormEstado('Activo');
     setShowAddModal(true);
@@ -77,15 +81,46 @@ export const SeguridadModule: React.FC = () => {
     setFormTelefono(user.telefono || '+502 ');
     setFormRol(user.rol === 'DUENO' ? 'ADMIN' : user.rol);
     setFormCargo(user.cargo);
-    setFormPassword(user.password || 'admin');
+    setFormPassword(user.password || (user.username === 'jairo.dannas' ? 'Dannas2026*' : ''));
     setFormPilotoId(user.pilotoId || '');
     setFormEstado(user.estado || 'Activo');
     setShowAddModal(true);
   };
 
+  const openQuickPasswordModal = (user: User) => {
+    setPasswordModalUser(user);
+    setQuickNewPassword(user.password || (user.username === 'jairo.dannas' ? 'Dannas2026*' : ''));
+  };
+
+  const handleSaveQuickPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passwordModalUser) return;
+    const cleanNewPass = quickNewPassword.trim();
+    if (!cleanNewPass) {
+      setFeedbackMsg({ type: 'error', text: 'La nueva contraseña no puede estar vacía.' });
+      return;
+    }
+    updateUser(passwordModalUser.id, { password: cleanNewPass });
+    setFeedbackMsg({
+      type: 'success',
+      text: `Contraseña de "${passwordModalUser.nombre}" (${passwordModalUser.username}) actualizada con éxito a: "${cleanNewPass}". Ahora el usuario debe iniciar sesión con esta nueva clave.`,
+    });
+    setPasswordModalUser(null);
+    setQuickNewPassword('');
+  };
+
   const handleSaveUser = (e: React.FormEvent) => {
     e.preventDefault();
     setFeedbackMsg(null);
+
+    const cleanPassword = formPassword.trim();
+    if (!cleanPassword) {
+      setFeedbackMsg({
+        type: 'error',
+        text: 'Por favor asigne una contraseña para el usuario.',
+      });
+      return;
+    }
 
     if (editingUser) {
       // Update existing user
@@ -96,17 +131,17 @@ export const SeguridadModule: React.FC = () => {
         telefono: formTelefono.trim(),
         rol: formRol,
         cargo: formCargo.trim(),
-        password: formPassword.trim(),
+        password: cleanPassword,
         pilotoId: formRol === 'OPERADOR' || formRol === 'PILOTO' ? formPilotoId || undefined : undefined,
         estado: formEstado,
       });
       setFeedbackMsg({
         type: 'success',
-        text: `Usuario "${formNombre}" actualizado exitosamente.`,
+        text: `Usuario "${formNombre}" actualizado exitosamente. Nueva contraseña asignada: "${cleanPassword}".`,
       });
       setShowAddModal(false);
     } else {
-      // Create new user
+      // Create new user with custom admin-assigned password
       const result = addUser({
         nombre: formNombre.trim(),
         username: formUsername.trim(),
@@ -114,7 +149,7 @@ export const SeguridadModule: React.FC = () => {
         telefono: formTelefono.trim(),
         rol: formRol,
         cargo: formCargo.trim() || (formRol === 'ADMIN' ? 'Administrador' : formRol === 'SUPERVISOR' ? 'Supervisor' : 'Operador'),
-        password: formPassword.trim() || 'admin',
+        password: cleanPassword,
         pilotoId: formRol === 'OPERADOR' || formRol === 'PILOTO' ? formPilotoId || undefined : undefined,
         estado: formEstado,
       });
@@ -129,7 +164,7 @@ export const SeguridadModule: React.FC = () => {
 
       setFeedbackMsg({
         type: 'success',
-        text: `Usuario "${formNombre}" registrado con éxito. Ahora puede iniciar sesión con la contraseña indicada.`,
+        text: `Usuario "${formNombre}" creado con éxito. Contraseña de acceso asignada: "${cleanPassword}".`,
       });
       setShowAddModal(false);
     }
@@ -427,11 +462,15 @@ export const SeguridadModule: React.FC = () => {
 
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                            <span>{isPassVisible ? u.password || 'admin' : '••••••••'}</span>
+                            <span className="font-semibold text-slate-800">
+                              {isPassVisible
+                                ? u.password || (u.username === 'jairo.dannas' ? 'Dannas2026*' : '')
+                                : '••••••••'}
+                            </span>
                             <button
                               type="button"
                               onClick={() => togglePasswordVisibility(u.id)}
-                              className="text-slate-400 hover:text-slate-600 p-0.5"
+                              className="text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer"
                               title={isPassVisible ? 'Ocultar' : 'Mostrar contraseña'}
                             >
                               {isPassVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -453,11 +492,22 @@ export const SeguridadModule: React.FC = () => {
 
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            {/* Change Password Button */}
+                            {isCurrentAdmin && (
+                              <button
+                                onClick={() => openQuickPasswordModal(u)}
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                title="Cambiar contraseña de este usuario"
+                              >
+                                <Key className="w-4 h-4" />
+                              </button>
+                            )}
+
                             {/* Edit Button */}
                             {isCurrentAdmin && (
                               <button
                                 onClick={() => openEditModal(u)}
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-amber-50 transition-colors cursor-pointer"
                                 title="Editar datos del usuario"
                               >
                                 <Edit2 className="w-4 h-4" />
@@ -468,7 +518,7 @@ export const SeguridadModule: React.FC = () => {
                             {isCurrentAdmin && !isPrimaryAdmin && (
                               <button
                                 onClick={() => handleDelete(u.id, u.nombre)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                                 title="Eliminar usuario"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -739,17 +789,21 @@ export const SeguridadModule: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">
-                    Contraseña de Acceso *
+                    {editingUser ? 'Nueva Contraseña (Opcional)' : 'Contraseña de Acceso (Determinada por Admin) *'}
                   </label>
                   <input
                     type="text"
                     required
                     value={formPassword}
                     onChange={(e) => setFormPassword(e.target.value)}
-                    placeholder="admin"
+                    placeholder="Defina la contraseña para este usuario"
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
                   />
-                  <span className="text-[10px] text-slate-400">Por defecto: admin</span>
+                  <span className="text-[10px] text-slate-500 block mt-0.5">
+                    {editingUser
+                      ? 'Puede modificarla por cualquier clave personalizada.'
+                      : 'El administrador establece libremente cualquier contraseña.'}
+                  </span>
                 </div>
 
                 <div>
@@ -802,6 +856,77 @@ export const SeguridadModule: React.FC = () => {
                   className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-sm transition-colors cursor-pointer"
                 >
                   {editingUser ? 'Guardar Cambios' : 'Registrar Usuario'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK PASSWORD MODAL */}
+      {passwordModalUser && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm">Cambiar Contraseña de Acceso</h3>
+                  <p className="text-[11px] text-slate-400">
+                    Usuario: <span className="text-white font-mono">{passwordModalUser.username}</span> ({passwordModalUser.nombre})
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPasswordModalUser(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveQuickPassword} className="p-5 space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 space-y-1">
+                <span className="font-bold block">Actualización de Credenciales</span>
+                <p className="text-[11px] text-blue-800 leading-relaxed">
+                  Al guardar, este usuario únicamente podrá iniciar sesión ingresando la nueva contraseña establecida aquí.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Nueva Contraseña para {passwordModalUser.nombre} *
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={quickNewPassword}
+                  onChange={(e) => setQuickNewPassword(e.target.value)}
+                  placeholder="Ingrese la nueva contraseña"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-sm text-slate-900"
+                />
+                <span className="text-[10px] text-slate-500 block mt-1">
+                  Puede ingresar cualquier combinación (letras, números o símbolos).
+                </span>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPasswordModalUser(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 text-xs transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
+                >
+                  Guardar Nueva Contraseña
                 </button>
               </div>
             </form>

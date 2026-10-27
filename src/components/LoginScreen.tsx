@@ -74,7 +74,7 @@ export const LoginScreen: React.FC = () => {
             </span>
             <span className="inline-flex items-center gap-1 bg-black/20 px-2.5 py-1 rounded-md backdrop-blur-xs border border-white/10">
               <Scale className="w-3.5 h-3.5 text-sky-300" />
-              Pesaje Muelle SAT
+              Pesaje de Báscula Portuaria
             </span>
           </div>
         </div>
@@ -319,12 +319,15 @@ export const LoginScreen: React.FC = () => {
 
           {/* Help Modal info box in blue */}
           {showHelp && (
-            <div className="mt-5 p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-start gap-2.5 animate-in fade-in">
+            <div className="mt-5 p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-start gap-2.5 animate-in fade-in shadow-xs">
               <HelpCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <span className="font-bold block">Soporte Corporativo Dannas</span>
+              <div className="space-y-1.5">
+                <span className="font-bold block text-blue-950">Asistencia y Soporte de Acceso</span>
                 <p className="text-[11px] leading-relaxed text-blue-800">
-                  Para restablecer sus credenciales o solicitar acceso institucional, comuníquese con la Gerencia de Operaciones o el Administrador del Sistema.
+                  Por motivos de seguridad, las contraseñas son confidenciales y asignadas de manera individual.
+                </p>
+                <p className="text-[11px] leading-relaxed text-blue-800">
+                  Si olvidó su usuario o contraseña, por favor contacte al <strong>Administrador General</strong> o al departamento de sistemas para el restablecimiento seguro de sus credenciales.
                 </p>
               </div>
             </div>

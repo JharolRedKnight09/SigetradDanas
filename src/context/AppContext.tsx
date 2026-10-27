@@ -126,7 +126,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const cleaned = parsed.filter(
           (u: User) => u.id === 'usr-1' || (!['usr-2', 'usr-3', 'usr-4'].includes(u.id) && u.username !== 'ana.secretaria' && u.username !== 'marcos.supervisor' && u.username !== 'pedro.piloto')
         );
-        return cleaned.length > 0 ? cleaned : INITIAL_USERS;
+        const updated = cleaned.map((u: User) => {
+          if ((u.username === 'jairo.dannas' || u.id === 'usr-1') && (!u.password || u.password === 'admin')) {
+            return { ...u, password: 'Dannas2026*' };
+          }
+          return u;
+        });
+        return updated.length > 0 ? updated : INITIAL_USERS;
       } catch (e) {
         return INITIAL_USERS;
       }
@@ -343,7 +349,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 telefono: u.telefono || '+502 0000-0000',
                 rol: (u.rol || 'ADMIN') as UserRole,
                 cargo: u.cargo || '',
-                password: u.password || 'admin',
+                password:
+                  u.password === 'admin' || !u.password
+                    ? (u.username === 'jairo.dannas' ? 'Dannas2026*' : u.password || '')
+                    : u.password,
                 pilotoId: u.piloto_id || undefined,
                 estado: (u.estado || 'Activo') as 'Activo' | 'Inactivo',
                 fechaCreacion: u.fecha_creacion || '',
@@ -1134,8 +1143,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Usuario no encontrado en el sistema. Verifique su nombre de usuario e intente nuevamente.' };
     }
 
-    const validPassword = found.password || 'admin';
-    if (cleanPass !== validPassword && cleanPass !== 'admin') {
+    const validPassword = found.password || (found.username === 'jairo.dannas' ? 'Dannas2026*' : '');
+    if (cleanPass !== validPassword) {
       return { success: false, error: 'Contraseña incorrecta. Verifique e intente de nuevo.' };
     }
 
@@ -1168,6 +1177,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: `El correo "${userData.email}" ya está registrado.` };
     }
 
+    if (!userData.password || !userData.password.trim()) {
+      return { success: false, error: 'Debe ingresar una contraseña para el nuevo usuario.' };
+    }
+
     const newUser: User = {
       ...userData,
       id: `usr-${Date.now()}`,
@@ -1182,7 +1195,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : userData.rol === 'SUPERVISOR'
           ? 'Supervisor de Operaciones'
           : 'Operador de Góndola'),
-      password: userData.password || 'admin',
+      password: userData.password.trim(),
       estado: userData.estado || 'Activo',
       fechaCreacion: new Date().toISOString().split('T')[0],
     };
@@ -1209,14 +1222,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateUser = (id: string, userData: Partial<User>) => {
-    const updated = users.map((u) => (u.id === id ? { ...u, ...userData } : u));
+    const updated = users.map((u) => {
+      if (u.id === id) {
+        return {
+          ...u,
+          ...userData,
+          password: userData.password !== undefined ? userData.password.trim() : u.password,
+        };
+      }
+      return u;
+    });
     setUsers(updated);
     localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(updated));
     if (currentUser.id === id) {
-      setCurrentUser((prev) => ({ ...prev, ...userData }));
-      localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify({ ...currentUser, ...userData }));
+      const updatedCurrent = {
+        ...currentUser,
+        ...userData,
+        password: userData.password !== undefined ? userData.password.trim() : currentUser.password,
+      };
+      setCurrentUser(updatedCurrent);
+      localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(updatedCurrent));
     }
-    logAccion('Seguridad', 'Usuario Modificado', `Actualización en usuario ID: ${id}`);
+    logAccion('Seguridad', 'Usuario Modificado', `Actualización de usuario o contraseña ID: ${id}`);
 
     // Persistir cambios en MySQL
     try {

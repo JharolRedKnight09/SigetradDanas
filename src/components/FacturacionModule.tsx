@@ -205,14 +205,14 @@ export const FacturacionModule: React.FC = () => {
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <Receipt className="w-6 h-6 text-blue-600" />
-              Centro de Facturación y Desglose Fiscal
+              Boletas de Cobro y Liquidación de Fletes
             </h1>
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold">
-              {facturas.length} facturas
+              {facturas.length} boletas
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Repositorio unificado de facturación, recepción de órdenes de cobro y cálculo automatizado de retenciones SAT (ISR 5% / IVA 15%).
+            Control de cobros por fletes convenidos en Quetzales (Q), viajes realizados y órdenes de liquidación directa por transporte de góndolas.
           </p>
         </div>
 
@@ -330,13 +330,11 @@ export const FacturacionModule: React.FC = () => {
               <table className="w-full text-left text-xs text-slate-700">
                 <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                   <tr>
-                    <th className="px-4 py-3">No. Factura</th>
-                    <th className="px-4 py-3">Cliente / NIT</th>
+                    <th className="px-4 py-3">No. Boleta</th>
+                    <th className="px-4 py-3">Cliente / Destino</th>
                     <th className="px-4 py-3">Buque / Proyecto</th>
-                    <th className="px-4 py-3">Monto Bruto</th>
-                    <th className="px-4 py-3">Retención ISR (5%)</th>
-                    <th className="px-4 py-3">Retención IVA</th>
-                    <th className="px-4 py-3">Neto a Cobrar</th>
+                    <th className="px-4 py-3">Viajes / Flete</th>
+                    <th className="px-4 py-3">Monto Flete (Q)</th>
                     <th className="px-4 py-3">Estado</th>
                     <th className="px-4 py-3 text-right">Comprobante</th>
                   </tr>
@@ -350,33 +348,19 @@ export const FacturacionModule: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="font-bold text-slate-900">{factura.clienteNombre}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">NIT: {factura.clienteNit}</div>
+                        <div className="text-[10px] text-slate-500 font-mono">Flete convenido</div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="font-medium text-slate-800">{factura.buqueProyecto}</div>
                         <div className="text-[10px] text-slate-500">
-                          {factura.cantidadViajes} viajes • {factura.material}
+                          {factura.material}
                         </div>
                       </td>
-                      <td className="px-4 py-3 font-semibold text-slate-900">
+                      <td className="px-4 py-3 font-semibold text-slate-800">
+                        {factura.cantidadViajes} fletes
+                      </td>
+                      <td className="px-4 py-3 font-bold text-emerald-700 text-sm">
                         Q{factura.montoBruto.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-red-600">
-                        {factura.esAgenteRetenedor ? (
-                          <span>-Q{factura.retencionIsrEstimada.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
-                        ) : (
-                          <span className="text-slate-400">N/A</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-red-600">
-                        {factura.esAgenteRetenedor ? (
-                          <span>-Q{factura.retencionIvaEstimada.toLocaleString('es-GT', { minimumFractionDigits: 2 })}</span>
-                        ) : (
-                          <span className="text-slate-400">N/A</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 font-bold text-emerald-700">
-                        Q{factura.netoEsperado.toLocaleString('es-GT', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3">
                         <span
