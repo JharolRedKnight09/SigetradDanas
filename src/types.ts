@@ -34,7 +34,7 @@ export type CategoriaMovimiento =
   | 'Mi Guate'
   | 'Palo Gordo';
 
-export type EstadoViaje = 'Pendiente' | 'En Curso' | 'Finalizado' | 'Facturado';
+export type EstadoViaje = 'Pendiente' | 'En Ruta' | 'En Curso' | 'Entregado' | 'Finalizado' | 'Facturado';
 
 export type EstadoGondola = 'Disponible' | 'En Ruta' | 'Mantenimiento';
 export type EstadoPiloto = 'Disponible' | 'En Viaje' | 'Descanso' | 'Inactivo';
@@ -134,6 +134,7 @@ export interface Viaje {
   // Combustible
   combustible?: ConsumoCombustibleViaje;
   
+  gastosRuta?: GastoRutaPiloto[];
   facturaId?: string;
   instruccionCobroId?: string;
   notas?: string;
@@ -154,7 +155,19 @@ export interface InstruccionCobro {
   facturaId?: string;
 }
 
+export type TipoGastoRuta = 'Viaticos' | 'Combustible' | 'Llantas' | 'Peajes' | 'Mecanica';
+
 export type EstadoFactura = 'Emitida' | 'Conciliada' | 'Parcial' | 'Anulada';
+
+export interface GastoRutaPiloto {
+  id: string;
+  tipo: TipoGastoRuta;
+  monto: number;
+  descripcion: string;
+  comprobante?: string;
+  fechaHora: string;
+  confirmadoPorPiloto: boolean;
+}
 
 export interface FacturaModificacion {
   fecha: string;
