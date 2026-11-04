@@ -358,42 +358,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 fechaCreacion: u.fecha_creacion || '',
               }));
 
-            let usuariosLocales: User[] = [];
-            try {
-              const rawLocalUsers = localStorage.getItem(`${STORAGE_KEY}_users`);
-              if (rawLocalUsers) usuariosLocales = JSON.parse(rawLocalUsers);
-            } catch (e) {}
-
-            const usernamesEnDb = new Set(
-              usuariosFormateados.map((u) => (u.username || '').toLowerCase()).filter(Boolean)
-            );
-            const usuariosPendientes = usuariosLocales.filter(
-              (u) => u && u.username && !usernamesEnDb.has(u.username.toLowerCase())
-            );
-
-            // Subir usuarios locales pendientes a MySQL para sincronización inmediata en otros navegadores/dispositivos
-            for (const p of usuariosPendientes) {
-              try {
-                console.log(`[Auto-Sync] Subiendo usuario local ${p.username} a MySQL...`);
-                await fetch('/api/usuarios', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(p)
-                });
-              } catch (subErr) {
-                console.warn(`[Auto-Sync] Error subiendo usuario pendiente ${p.username}:`, subErr);
-              }
-            }
-
-            // Deduplicación estricta por username
+            // Deduplicación estricta por username (NO re-subir pendientes para evitar resucitar usuarios eliminados)
             const mapaUsuarios = new Map<string, User>();
             usuariosFormateados.forEach((u) => {
               if (u.username) mapaUsuarios.set(u.username.toLowerCase(), u);
-            });
-            usuariosPendientes.forEach((p) => {
-              if (p.username && !mapaUsuarios.has(p.username.toLowerCase())) {
-                mapaUsuarios.set(p.username.toLowerCase(), p);
-              }
             });
             const listaUsuariosUnica = Array.from(mapaUsuarios.values());
             setUsers(listaUsuariosUnica);
