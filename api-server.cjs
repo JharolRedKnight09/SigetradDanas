@@ -956,6 +956,11 @@ app.put('/api/usuarios/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const u = req.body;
+    const isNumeric = /^\d+$/.test(id);
+    const whereClause = isNumeric
+      ? `WHERE id = ? OR user_id_str = ? OR username = ?`
+      : `WHERE user_id_str = ? OR username = ?`;
+    const whereParams = isNumeric ? [id, id, id] : [id, id];
     await pool.query(
       `UPDATE usuarios SET 
          nombre = COALESCE(?, nombre),
@@ -966,8 +971,8 @@ app.put('/api/usuarios/:id', async (req, res) => {
          password = COALESCE(?, password),
          piloto_id = COALESCE(?, piloto_id),
          estado = COALESCE(?, estado)
-       WHERE id = ? OR user_id_str = ? OR username = ?`,
-      [u.nombre, u.email, u.telefono, u.rol, u.cargo, u.password, u.pilotoId, u.estado, id, id, id]
+       ${whereClause}`,
+      [u.nombre, u.email, u.telefono, u.rol, u.cargo, u.password, u.pilotoId, u.estado, ...whereParams]
     );
     res.json({ message: 'Usuario actualizado en MySQL' });
   } catch (err) {
@@ -978,11 +983,22 @@ app.put('/api/usuarios/:id', async (req, res) => {
 app.delete('/api/usuarios/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await pool.query(
-      `DELETE FROM usuarios WHERE (id = ? OR user_id_str = ? OR username = ?) AND username != 'jairo.dannas'`,
-      [id, id, id]
-    );
-    res.json({ message: 'Usuario eliminado de MySQL' });
+    // Evitar comparar columnas INT con strings (error "Truncated incorrect DOUBLE value")
+    const isNumeric = /^\d+$/.test(id);
+    let query;
+    let params;
+    if (isNumeric) {
+      query = `DELETE FROM usuarios WHERE (id = ? OR user_id_str = ? OR username = ?) AND username != 'jairo.dannas'`;
+      params = [id, id, id];
+    } else {
+      query = `DELETE FROM usuarios WHERE (user_id_str = ? OR username = ?) AND username != 'jairo.dannas'`;
+      params = [id, id];
+    }
+    const [result] = await pool.query(query, params);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado en la base de datos.' });
+    }
+    res.json({ message: 'Usuario eliminado de MySQL', affectedRows: result.affectedRows });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
