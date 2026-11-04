@@ -99,7 +99,7 @@ interface AppContextType {
   logout: () => void;
   addUser: (userData: Omit<User, 'id'>) => { success: boolean; error?: string };
   updateUser: (id: string, userData: Partial<User>) => void;
-  deleteUser: (id: string) => { success: boolean; error?: string };
+  deleteUser: (id: string) => Promise<{ success: boolean; error?: string }>;
 
   // Tema Claro / Oscuro para el panel central
   theme: 'dark' | 'light';
@@ -1259,27 +1259,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const deleteUser = (id: string): { success: boolean; error?: string } => {
+  const deleteUser = async (id: string): Promise<{ success: boolean; error?: string }> => {
     const target = users.find((u) => u.id === id);
     if (!target) return { success: false, error: 'Usuario no encontrado.' };
     if (target.username === 'jairo.dannas' || target.id === 'usr-1') {
       return { success: false, error: 'No se puede eliminar la cuenta principal de Jairo Dannas (Administrador).' };
     }
+
+    // Eliminar en MySQL primero; solo actualizar estado local si el servidor confirma
+    try {
+      const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return { success: false, error: data.error || 'Error al eliminar usuario en el servidor.' };
+      }
+    } catch (err) {
+      console.warn('Error al eliminar usuario en servidor:', err);
+      return { success: false, error: 'No se pudo conectar con el servidor para eliminar el usuario.' };
+    }
+
     const updated = users.filter((u) => u.id !== id);
     setUsers(updated);
     localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(updated));
     logAccion('Seguridad', 'Usuario Eliminado', `Se eliminó al usuario ${target.nombre} (${target.username})`);
-
-    // Eliminar de MySQL
-    try {
-      fetch(`/api/usuarios/${id}`, {
-        method: 'DELETE'
-      })
-      .then(() => setTimeout(sincronizarConServidor, 500))
-      .catch((err) => console.warn('Error al eliminar usuario en servidor:', err));
-    } catch (e) {
-      console.warn(e);
-    }
 
     return { success: true };
   };

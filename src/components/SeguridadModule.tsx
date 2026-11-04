@@ -170,9 +170,9 @@ export const SeguridadModule: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string, nombre: string) => {
+  const handleDelete = async (id: string, nombre: string) => {
     if (confirm(`¿Confirma que desea eliminar el usuario "${nombre}"?`)) {
-      const res = deleteUser(id);
+      const res = await deleteUser(id);
       if (!res.success) {
         setFeedbackMsg({ type: 'error', text: res.error || 'Error al eliminar usuario' });
       } else {
