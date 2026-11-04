@@ -358,11 +358,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 fechaCreacion: u.fecha_creacion || '',
               }));
 
-            // Deduplicación estricta por username (NO re-subir pendientes para evitar resucitar usuarios eliminados)
+            // Deduplicación estricta por username (NO re-subir pendientes para evitar resucitar usuarios eliminados del servidor)
+            // Solo subimos usuarios locales que NO existen en la BD con ese username Y que no fueron eliminados recientemente
             const mapaUsuarios = new Map<string, User>();
             usuariosFormateados.forEach((u) => {
               if (u.username) mapaUsuarios.set(u.username.toLowerCase(), u);
             });
+            // Filtrar usuarios pendientes: subir solo si no existen en BD con ese username
+            const usuariosPendientes = usuariosLocales.filter((u) => u && u.username && !usernamesEnDb.has(u.username.toLowerCase()));
+            for (const p of usuariosPendientes) {
+              try {
+                console.log(`[Auto-Sync] Subiendo usuario local ${p.username} a MySQL...`);
+                await fetch('/api/usuarios', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(p)
+                });
+              } catch (subErr) {
+                console.warn(`[Auto-Sync] Error subiendo usuario pendiente ${p.username}:`, subErr);
+              }
+            }
             const listaUsuariosUnica = Array.from(mapaUsuarios.values());
             setUsers(listaUsuariosUnica);
             localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(listaUsuariosUnica));
